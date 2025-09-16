@@ -1,0 +1,391 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>MEU CALENDÁRIO - LEMBRETES E ANOTAÇÕES</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;700&display=swap" rel="stylesheet">
+  <style>
+    :root{
+      --bg:#f4f7fb;
+      --card:#ffffff;
+      --accent:#4a90e2;
+      --accent-dark:#357ebd;
+      --muted:#6b7280;
+      --primary-gradient:linear-gradient(45deg, #4a90e2, #75b3f2);
+    }
+    *{box-sizing:border-box}
+    body{font-family:'Poppins',sans-serif;background:var(--bg);margin:0;color:#333}
+    header{background:var(--primary-gradient);color:#fff;padding:24px;text-align:center;font-weight:700;box-shadow:0 4px 12px rgba(0,0,0,0.1);}
+    h3, h4{margin-top:0;}
+    .container{max-width:1200px;margin:24px auto;padding:15px}
+
+    /* Calendar */
+    .calendar{background:var(--card);border-radius:15px;padding:20px;box-shadow:0 10px 30px rgba(12,24,48,0.08);}
+    .calendar-header{display:flex;justify-content:space-between;align-items:center;margin-bottom:15px}
+    .calendar-header button{background:transparent;border:none;font-size:24px;cursor:pointer;color:var(--accent);transition:transform 0.2s;}
+    .calendar-header button:hover{transform:scale(1.1);}
+    .calendar-header select{border:1px solid #ddd;border-radius:8px;padding:6px;font-family:inherit;background-color:var(--bg);cursor:pointer;}
+    .calendar table{width:100%;border-collapse:collapse}
+    .calendar th,.calendar td{width:14.28%;padding:12px 8px;text-align:center;border:1px solid #eee;transition:background-color 0.2s}
+    .calendar th{background:var(--accent);color:#fff;padding:10px;font-weight:600;font-size:14px}
+    .calendar td{min-height:80px;vertical-align:top;position:relative;cursor:pointer;border-radius:5px;}
+    .calendar td:hover{background-color:#f0f7ff;}
+    .calendar td .daynum{position:absolute;left:10px;top:8px;font-weight:600;font-size:1.1em;}
+    .has-event{background-color:rgba(74,144,226,0.1);}
+    .has-event .dot{position:absolute;right:8px;top:8px;width:10px;height:10px;border-radius:50%;background:#ff7a00;border:2px solid #fff;}
+    .selected{box-shadow:0 0 0 3px var(--accent) inset, 0 0 0 3px var(--accent);}
+    
+    /* Day's events preview */
+    .day-preview{display:flex;flex-wrap:wrap;gap:8px;margin-top:10px}
+    .day-preview .event-item{background:rgba(74,144,226,0.15);color:var(--accent-dark);padding:6px 10px;border-radius:20px;font-size:14px;cursor:pointer;font-weight:600;}
+    
+    /* layout */
+    .flex{display:flex;gap:20px}
+    .col{flex:1}
+    .card{background:var(--card);padding:20px;border-radius:15px;box-shadow:0 6px 18px rgba(12,24,48,0.04)}
+    
+    /* notes area */
+    .notes-list{display:flex;flex-direction:column;gap:15px;margin-top:15px}
+    .note{padding:15px;border-radius:12px;border:1px solid #eee;position:relative;background-color:#fafafa;}
+    .note .meta{font-size:13px;color:var(--muted);margin-top:4px;display:block;}
+    .note img, .note audio, .note video{max-width:100%;height:auto;border-radius:10px;margin-top:12px;border:1px solid #ddd;}
+    .note .delete-btn{position:absolute;top:10px;right:10px;background:none;border:none;color:var(--muted);cursor:pointer;font-size:22px;opacity:0.6;transition:opacity 0.2s}
+    .note .delete-btn:hover{opacity:1;color:var(--accent-dark)}
+    
+    /* controls */
+    label{font-size:14px;color:var(--muted);display:block;margin-top:15px;margin-bottom:8px;font-weight:600;}
+    input[type=text],textarea,select,input[type=file]{width:100%;padding:12px;border-radius:10px;border:1px solid #e6e9ef;font-family:inherit;font-size:1em;transition:border-color 0.2s;}
+    input[type=text]:focus,textarea:focus{outline:none;border-color:var(--accent);}
+    button{padding:10px 15px;border-radius:10px;border:none;cursor:pointer;font-family:inherit;font-weight:600;}
+    .primary{background:var(--accent);color:#fff;box-shadow:0 4px 10px rgba(74,144,226,0.3);}
+    .primary:hover{background:var(--accent-dark);}
+    .ghost{background:transparent;border:1px solid #e6e9ef;color:var(--muted);}
+    .ghost:hover{background-color:#f0f7ff;}
+
+    @media(max-width:900px){
+      .flex{flex-direction:column}
+      .container{padding:10px;margin:10px auto;}
+      header{padding:18px;}
+      .card{padding:15px;}
+      .calendar td{min-height:60px;}
+    }
+  </style>
+</head>
+<body>
+  <header>MEU CALENDÁRIO - LEMBRETES E ANOTAÇÕES!</header>
+  <div class="container">
+    
+    <div class="calendar card" id="calendarWrap"></div>
+    <div class="card" style="margin-top:20px">
+      <h3>Eventos rápidos do dia <span id="selectedDayEventsLabel">...</span></h3>
+      <div id="quickEventsList" class="day-preview">Nenhum dia selecionado</div>
+    </div>
+    
+    <div class="flex" style="margin-top:20px">
+      <div class="col card">
+        <h3>Detalhes e Anotações</h3>
+        <span id="selectedDayLabel" style="font-weight:600;display:block;margin-bottom:15px;color:var(--accent);">Nenhum dia selecionado</span>
+        <div id="notesPanel">
+          <label for="noteTitle">Título da Anotação</label>
+          <input type="text" id="noteTitle" placeholder="Ex: Consulta médica" />
+          
+          <label for="noteText">Texto / Descrição</label>
+          <textarea id="noteText" rows="4" placeholder="Digite sua anotação..."></textarea>
+          
+          <label for="mediaInput">Upload de mídia (imagem, áudio ou vídeo)</label>
+          <input type="file" id="mediaInput" accept="image/*,audio/*,video/*" />
+          
+          <label>Gravar Áudio</label>
+          <div style="display:flex;gap:8px;margin-bottom:8px">
+            <button id="recStart" class="ghost">Gravar</button>
+            <button id="recStop" class="ghost" disabled>Parar</button>
+          </div>
+          
+          <div style="display:flex;gap:8px;margin-top:20px;align-items:center">
+            <button id="saveNote" class="primary">Salvar Anotação</button>
+            <button id="clearInputs" class="ghost">Limpar</button>
+          </div>
+        </div>
+      </div>
+      
+      <div class="col card">
+        <h3>Anotações do Dia</h3>
+        <div id="notesList" class="notes-list"></div>
+      </div>
+    </div>
+    
+  </div>
+  
+  <script>
+    // ======= Simple storage using IndexedDB for files & localStorage for events =======
+    const DB_NAME = 'calendar_notes_db_v1';
+    const DB_STORE = 'notes';
+    let db;
+    
+    function openDB(){
+      return new Promise((res,rej)=>{
+        const req = indexedDB.open(DB_NAME,1);
+        req.onupgradeneeded = e => { const idb = e.target.result; if(!idb.objectStoreNames.contains(DB_STORE)) idb.createObjectStore(DB_STORE, { keyPath: 'id' }); };
+        req.onsuccess = e => { db = e.target.result; res(db); };
+        req.onerror = e => rej(e.target.error);
+      });
+    }
+    
+    function saveNoteToDB(note){
+      return new Promise((res,rej)=>{
+        const tx = db.transaction(DB_STORE, 'readwrite');
+        const store = tx.objectStore(DB_STORE);
+        store.put(note);
+        tx.oncomplete = ()=> res(note);
+        tx.onerror = e=> rej(e.target.error);
+      });
+    }
+    
+    function deleteNoteFromDB(id){
+      return new Promise((res,rej)=>{
+        const tx = db.transaction(DB_STORE,'readwrite');
+        tx.objectStore(DB_STORE).delete(id);
+        tx.oncomplete = ()=> res(); tx.onerror = e=> rej(e.target.error);
+      });
+    }
+    
+    function getNotesForDay(dateStr){
+      return new Promise((res,rej)=>{
+        const tx = db.transaction(DB_STORE,'readonly');
+        const store = tx.objectStore(DB_STORE);
+        const req = store.getAll();
+        req.onsuccess = ()=>{
+          const all = req.result || [];
+          res(all.filter(n=>n.date === dateStr).sort((a,b)=>b.createdAt - a.createdAt));
+        };
+        req.onerror = e=> rej(e.target.error);
+      });
+    }
+    
+    function getEventsList(){
+      const events = [];
+      for(let i=0; i<localStorage.length; i++){
+        const key = localStorage.key(i);
+        if(key.match(/^\d{4}-\d{2}-\d{2}$/)){
+          events.push(key);
+        }
+      }
+      return events;
+    }
+
+    // ======= UI calendar rendering =======
+    const calendarWrap = document.getElementById('calendarWrap');
+    const selectedDayLabel = document.getElementById('selectedDayLabel');
+    const selectedDayEventsLabel = document.getElementById('selectedDayEventsLabel');
+    const quickEventsList = document.getElementById('quickEventsList');
+    
+    let selectedDate = null; // YYYY-MM-DD
+    let currentMonth = new Date().getMonth();
+    let currentYear = new Date().getFullYear();
+    
+    function renderCalendar(year,month){
+      const date = new Date(year,month,1);
+      const daysInMonth = new Date(year,month+1,0).getDate();
+      const startDay = date.getDay();
+      
+      const events = getEventsList();
+      
+      let html = `<div class="calendar-header">
+                    <button onclick="prevMonth()">‹</button>
+                    <button onclick="prevYear()">«</button>
+                    <div>
+                      <select id="month-select" onchange="jumpToMonth(this.value)">
+                        ${Array.from({length:12},(_,i)=>`<option value="${i}" ${i===month?'selected':''}>${new Date(year,i,1).toLocaleString('pt-BR',{month:'long'})}</option>`).join('')}
+                      </select>
+                      <select id="year-select" onchange="jumpToYear(this.value)">
+                        ${Array.from({length:20},(_,i)=>`<option value="${year-10+i}" ${year-10+i===year?'selected':''}>${year-10+i}</option>`).join('')}
+                      </select>
+                    </div>
+                    <button onclick="nextYear()">»</button>
+                    <button onclick="nextMonth()">›</button>
+                  </div>`;
+      html += '<table><thead><tr><th>Dom</th><th>Seg</th><th>Ter</th><th>Qua</th><th>Qui</th><th>Sex</th><th>Sáb</th></tr></thead><tbody>';
+      let day=1; 
+      
+      for(let i=0;i<6;i++){ 
+        html += '<tr>'; 
+        for(let j=0;j<7;j++){ 
+          if(i===0 && j<startDay){ 
+            html += '<td></td>'; 
+          }else if(day>daysInMonth){ 
+            html += '<td></td>'; 
+          } else{ 
+            const dateStr = `${year}-${String(month+1).padStart(2,'0')}-${String(day).padStart(2,'0')}`; 
+            const hasEvent = events.includes(dateStr); 
+            const isSelected = dateStr === selectedDate;
+            const cls = (hasEvent ? 'has-event' : '') + (isSelected ? ' selected' : ''); 
+            html += `<td data-date="${dateStr}" class="${cls}"><div class="daynum">${day}</div>${hasEvent?'<div class="dot" title="Tem evento"></div>':''}</td>`; 
+            day++; 
+          } 
+        } 
+        html += '</tr>'; 
+      }
+      html += '</tbody></table>';
+      calendarWrap.innerHTML = html;
+      
+      calendarWrap.querySelectorAll('td[data-date]').forEach(td=>{
+        td.addEventListener('click', ()=>{
+          document.querySelectorAll('td.selected').forEach(x=>x.classList.remove('selected'));
+          td.classList.add('selected');
+          selectedDate = td.getAttribute('data-date');
+          selectedDayLabel.textContent = new Date(selectedDate + 'T12:00:00').toLocaleDateString('pt-BR',{day:'numeric',month:'long',year:'numeric'});
+          selectedDayEventsLabel.textContent = new Date(selectedDate + 'T12:00:00').toLocaleDateString('pt-BR',{day:'numeric',month:'long',year:'numeric'});
+          loadDayData(selectedDate);
+        });
+      });
+      
+      if (selectedDate) {
+          loadDayData(selectedDate);
+          document.querySelector(`td[data-date='${selectedDate}']`)?.classList.add('selected');
+      }
+    }
+    
+    window.prevMonth = ()=>{ currentMonth--; if(currentMonth < 0){ currentMonth = 11; currentYear--; } renderCalendar(currentYear, currentMonth); };
+    window.nextMonth = ()=>{ currentMonth++; if(currentMonth > 11){ currentMonth = 0; currentYear++; } renderCalendar(currentYear, currentMonth); };
+    window.prevYear = ()=>{ currentYear--; renderCalendar(currentYear, currentMonth); };
+    window.nextYear = ()=>{ currentYear++; renderCalendar(currentYear, currentMonth); };
+    window.jumpToMonth = (month)=>{ currentMonth = parseInt(month); renderCalendar(currentYear, currentMonth); };
+    window.jumpToYear = (year)=>{ currentYear = parseInt(year); renderCalendar(currentYear, currentMonth); };
+    
+    // ======= Day panel =======
+    const noteTitle = document.getElementById('noteTitle');
+    const noteText = document.getElementById('noteText');
+    const mediaInput = document.getElementById('mediaInput');
+    const saveNote = document.getElementById('saveNote');
+    const clearInputs = document.getElementById('clearInputs');
+    const notesList = document.getElementById('notesList');
+    
+    let mediaRecorder; let recordedChunks = [];
+    const recStart = document.getElementById('recStart');
+    const recStop = document.getElementById('recStop');
+    
+    recStart.addEventListener('click', async ()=>{
+      if(!navigator.mediaDevices) return alert('Gravação não suportada neste navegador');
+      try{
+        const stream = await navigator.mediaDevices.getUserMedia({audio:true});
+        mediaRecorder = new MediaRecorder(stream);
+        recordedChunks = [];
+        mediaRecorder.ondataavailable = e => { if(e.data.size>0) recordedChunks.push(e.data); };
+        mediaRecorder.onstop = ()=>{
+          const blob = new Blob(recordedChunks,{type:'audio/webm'});
+          const file = new File([blob],'recording.webm',{type:blob.type});
+          const dt = new DataTransfer(); dt.items.add(file); mediaInput.files = dt.files;
+          recStart.disabled = false; recStop.disabled = true;
+          alert('Áudio gravado com sucesso! Clique em "Salvar Anotação" para salvá-lo.');
+        };
+        mediaRecorder.start();
+        recStart.disabled = true; recStop.disabled = false;
+      }catch(e){ alert('Permissão negada ou erro: '+e.message) }
+    });
+    recStop.addEventListener('click', ()=>{ 
+      if(mediaRecorder && mediaRecorder.state!=='inactive') mediaRecorder.stop(); 
+    });
+    
+    clearInputs.addEventListener('click', ()=>{ 
+      noteTitle.value=''; 
+      noteText.value=''; 
+      mediaInput.value=''; 
+      recStart.disabled = false; 
+      recStop.disabled = true;
+    });
+    
+    saveNote.addEventListener('click', async ()=>{
+      if(!selectedDate) return alert('Selecione um dia no calendário');
+      
+      const id = Date.now().toString(36)+Math.random().toString(36).slice(2,6);
+      const note = { id, date: selectedDate, title: noteTitle.value.trim(), text: noteText.value.trim(), createdAt: Date.now() };
+      
+      if(mediaInput.files && mediaInput.files[0]){
+        const file = mediaInput.files[0];
+        note.media = await fileToBlob(file);
+        note.mediaType = file.type.split('/')[0];
+      }
+      
+      await saveNoteToDB(note);
+      await loadDayData(selectedDate);
+      clearInputs.click();
+      
+      localStorage.setItem(selectedDate, 'true');
+      renderCalendar(currentYear, currentMonth);
+    });
+    
+    function fileToBlob(file){ 
+      return new Promise((res)=>{ 
+        const reader = new FileReader(); 
+        reader.onload = ()=>{ res(new Blob([new Uint8Array(reader.result)],{type:file.type})); }; 
+        reader.readAsArrayBuffer(file); 
+      }); 
+    }
+    
+    async function loadDayData(dateStr){
+      const notes = await getNotesForDay(dateStr);
+      
+      quickEventsList.innerHTML = '';
+      if(notes.length === 0){
+        quickEventsList.innerHTML = 'Nenhuma anotação neste dia';
+      } else {
+        notes.forEach(n => {
+          const el = document.createElement('div');
+          el.className = 'event-item';
+          el.textContent = n.title || 'Anotação sem título';
+          quickEventsList.appendChild(el);
+        });
+      }
+      
+      notesList.innerHTML = '';
+      if(notes.length===0){ 
+        notesList.innerHTML = '<div class="small">Nenhuma anotação para este dia</div>'; 
+        return; 
+      }
+      
+      for(const n of notes){ 
+        const el = document.createElement('div'); 
+        el.className='note'; 
+        let inner = `<div style='font-weight:700'>${escapeHtml(n.title)||'Sem título'}</div>`;
+        inner += `<div class="meta">${new Date(n.createdAt).toLocaleString('pt-BR')}</div>`; 
+        inner += `<button data-id="${n.id}" class="delete-btn">✖</button>`;
+        if(n.text) inner += `<div style="margin-top:6px">${escapeHtml(n.text)}</div>`; 
+        
+        if(n.media){
+            const mediaUrl = URL.createObjectURL(n.media);
+            if(n.mediaType === 'image') inner += `<img src="${mediaUrl}" alt="media"/>`;
+            else if(n.mediaType === 'audio') inner += `<audio controls src="${mediaUrl}"></audio>`;
+            else if(n.mediaType === 'video') inner += `<video controls src="${mediaUrl}"></video>`;
+        }
+        
+        el.innerHTML = inner; 
+        notesList.appendChild(el); 
+        
+        el.querySelector('.delete-btn')?.addEventListener('click', async ()=>{ 
+          if(!confirm('Apagar anotação?')) return; 
+          await deleteNoteFromDB(n.id); 
+          await loadDayData(dateStr); 
+          
+          const remainingNotes = await getNotesForDay(dateStr);
+          if (remainingNotes.length === 0) {
+              localStorage.removeItem(dateStr);
+          }
+          renderCalendar(currentYear, currentMonth);
+        }); 
+      }
+    }
+    
+    function escapeHtml(str){ 
+      return str.replaceAll('&','&amp;').replaceAll('<','&lt;').replaceAll('>','&gt;').replaceAll('"','&quot;'); 
+    }
+    
+    (async function init(){ 
+      await openDB(); 
+      renderCalendar(currentYear, currentMonth); 
+    })();
+  </script>
+</body>
+</html>
