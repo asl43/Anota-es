@@ -1,622 +1,969 @@
 <!DOCTYPE html>
 <html lang="pt-BR">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>MEU CALENDÁRIO - LEMBRETES E ANOTAÇÕES</title>
-  <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;700&display=swap" rel="stylesheet">
-  <style>
-    :root{
-      --bg:#f4f7fb;
-      --card:#ffffff;
-      --accent:#4a90e2;
-      --accent-dark:#357ebd;
-      --muted:#6b7280;
-      --success:#28a745;
-      --primary-gradient:linear-gradient(45deg, #4a90e2, #75b3f2);
-    }
-    *{box-sizing:border-box}
-    body{font-family:'Poppins',sans-serif;background:var(--bg);margin:0;color:#333}
-    header{background:var(--primary-gradient);color:#fff;padding:24px;text-align:center;font-weight:700;box-shadow:0 4px 12px rgba(0,0,0,0.1);}
-    h3, h4{margin-top:0;}
-    .container{max-width:1000px;margin:24px auto;padding:15px}
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Meu Calendário Organizador</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
 
-    /* Calendar */
-    .calendar-container{max-width:800px;margin:0 auto;}
-    .calendar{background:var(--card);border-radius:15px;padding:20px;box-shadow:0 10px 30px rgba(12,24,48,0.08);}
-    .calendar-header{display:flex;justify-content:space-between;align-items:center;margin-bottom:15px}
-    .calendar-header button{background:transparent;border:none;font-size:24px;cursor:pointer;color:var(--accent);transition:transform 0.2s;}
-    .calendar-header button:hover{transform:scale(1.1);}
-    .calendar-header select{border:1px solid #ddd;border-radius:8px;padding:6px;font-family:inherit;background-color:var(--bg);cursor:pointer;}
-    .calendar table{width:100%;border-collapse:collapse}
-    .calendar th,.calendar td{width:14.28%;padding:12px 8px;text-align:center;border:1px solid #eee;transition:background-color 0.2s}
-    .calendar th{background:var(--accent);color:#fff;padding:10px;font-weight:600;font-size:14px}
-    .calendar td{min-height:80px;vertical-align:top;position:relative;cursor:pointer;border-radius:5px;}
-    .calendar td:hover{background-color:#f0f7ff;}
-    .calendar td .daynum{position:absolute;left:10px;top:8px;font-weight:600;font-size:1.1em;}
-    .has-event{background-color:rgba(74,144,226,0.1);}
-    .has-event .dot{position:absolute;right:8px;top:8px;width:10px;height:10px;border-radius:50%;background:#ff7a00;border:2px solid #fff;}
-    .selected{box-shadow:0 0 0 3px var(--accent) inset, 0 0 0 3px var(--accent);}
-    
-    /* Day's events preview */
-    .day-preview{display:flex;flex-wrap:wrap;gap:8px;margin-top:10px}
-    .day-preview .event-item{background:rgba(74,144,226,0.15);color:var(--accent-dark);padding:6px 10px;border-radius:20px;font-size:14px;cursor:pointer;font-weight:600;}
-    
-    /* layout */
-    .flex{display:flex;gap:20px;flex-wrap: wrap;}
-    .col{flex:1;min-width: 300px;}
-    .card{background:var(--card);padding:20px;border-radius:15px;box-shadow:0 6px 18px rgba(12,24,48,0.04)}
-    
-    /* notes area */
-    .notes-list{display:flex;flex-direction:column;gap:15px;margin-top:15px}
-    .note{padding:15px;border-radius:12px;border:1px solid #eee;position:relative;background-color:#fafafa;}
-    .note .meta{font-size:13px;color:var(--muted);margin-top:4px;display:block;}
-    .note img, .note audio, .note video{max-width:100%;height:auto;border-radius:10px;margin-top:12px;border:1px solid #ddd;}
-    .note .delete-btn{position:absolute;top:10px;right:10px;background:none;border:none;color:var(--muted);cursor:pointer;font-size:22px;opacity:0.6;transition:opacity 0.2s}
-    .note .delete-btn:hover{opacity:1;color:var(--accent-dark)}
-    
-    /* controls */
-    label{font-size:14px;color:var(--muted);display:block;margin-top:15px;margin-bottom:8px;font-weight:600;}
-    input[type=text],input[type=email],input[type=tel],input[type=time],textarea,select,input[type=file]{width:100%;padding:12px;border-radius:10px;border:1px solid #e6e9ef;font-family:inherit;font-size:1em;transition:border-color 0.2s;}
-    input[type=text]:focus,input[type=email]:focus,input[type=tel]:focus,input[type=time]:focus,textarea:focus{outline:none;border-color:var(--accent);}
-    .notification-group{display: flex; gap: 10px; align-items: flex-end;}
-    .notification-group > div {flex: 1;}
-    .notification-group select{width: auto;}
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            color: #333;
+        }
 
-    button{padding:10px 15px;border-radius:10px;border:none;cursor:pointer;font-family:inherit;font-weight:600;}
-    .primary{background:var(--accent);color:#fff;box-shadow:0 4px 10px rgba(74,144,226,0.3);}
-    .primary:hover{background:var(--accent-dark);}
-    .ghost{background:transparent;border:1px solid #e6e9ef;color:var(--muted);}
-    .ghost:hover{background-color:#f0f7ff;}
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+        }
 
-    .feedback-message {
-      position: fixed;
-      bottom: 20px;
-      left: 50%;
-      transform: translateX(-50%);
-      padding: 12px 20px;
-      border-radius: 8px;
-      color: white;
-      font-weight: 600;
-      display: none;
-      z-index: 1000;
-    }
-    .feedback-message.success { background-color: var(--success); }
-    .feedback-message.error { background-color: #dc3545; }
+        .header {
+            background: rgba(255, 255, 255, 0.95);
+            padding: 20px;
+            border-radius: 15px;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+            margin-bottom: 20px;
+            text-align: center;
+        }
 
-    #saveNote.loading .spinner {
-      border: 4px solid rgba(255, 255, 255, 0.3);
-      border-top: 4px solid #fff;
-      border-radius: 50%;
-      width: 20px;
-      height: 20px;
-      animation: spin 1s linear infinite;
-      margin-left: 10px;
-      display: inline-block;
-      vertical-align: middle;
-    }
-    #saveNote.loading { pointer-events: none; }
-    
-    #recStatus {
-      font-size: 14px;
-      color: #e44d26;
-      display: none;
-      font-weight: 600;
-      margin-left: 10px;
-    }
+        .header h1 {
+            color: #4a5568;
+            font-size: 2.5rem;
+            margin-bottom: 10px;
+        }
 
-    @keyframes spin {
-      0% { transform: rotate(0deg); }
-      100% { transform: rotate(360deg); }
-    }
+        .main-content {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 20px;
+            margin-bottom: 20px;
+        }
 
-    @media(max-width:768px){
-      .flex{flex-direction:column}
-      .container{padding:10px;margin:10px auto;}
-      header{padding:18px;}
-      .card{padding:15px;}
-      .calendar td{min-height:60px;}
-      .notification-group{flex-direction: column; align-items: stretch;}
-    }
-  </style>
+        .calendar-section {
+            background: rgba(255, 255, 255, 0.95);
+            border-radius: 15px;
+            padding: 20px;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+        }
+
+        .events-section {
+            background: rgba(255, 255, 255, 0.95);
+            border-radius: 15px;
+            padding: 20px;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+        }
+
+        .calendar-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+        }
+
+        .nav-btn {
+            background: #667eea;
+            color: white;
+            border: none;
+            padding: 10px 15px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 16px;
+            transition: background 0.3s;
+        }
+
+        .nav-btn:hover {
+            background: #5a67d8;
+        }
+
+        .month-year {
+            font-size: 1.5rem;
+            font-weight: bold;
+            color: #4a5568;
+        }
+
+        .calendar-grid {
+            display: grid;
+            grid-template-columns: repeat(7, 1fr);
+            gap: 1px;
+            background: #e2e8f0;
+            border-radius: 8px;
+            overflow: hidden;
+        }
+
+        .calendar-day-header {
+            background: #4a5568;
+            color: white;
+            padding: 10px;
+            text-align: center;
+            font-weight: bold;
+        }
+
+        .calendar-day {
+            background: white;
+            min-height: 50px;
+            padding: 5px;
+            cursor: pointer;
+            transition: background 0.2s;
+            position: relative;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: flex-start;
+        }
+
+        .calendar-day:hover {
+            background: #f7fafc;
+        }
+
+        .calendar-day.other-month {
+            color: #a0aec0;
+            background: #f8f9fa;
+        }
+
+        .calendar-day.selected {
+            background: #667eea;
+            color: white;
+        }
+
+        .calendar-day.has-event {
+            background: #e6fffa;
+            border: 2px solid #38b2ac;
+        }
+
+        .event-dot {
+            width: 6px;
+            height: 6px;
+            background: #38b2ac;
+            border-radius: 50%;
+            margin-top: 2px;
+        }
+
+        .events-list {
+            max-height: 400px;
+            overflow-y: auto;
+        }
+
+        .event-item {
+            background: #f7fafc;
+            padding: 15px;
+            margin-bottom: 10px;
+            border-radius: 8px;
+            border-left: 4px solid #667eea;
+            position: relative;
+        }
+
+        .event-date {
+            font-weight: bold;
+            color: #667eea;
+            margin-bottom: 5px;
+        }
+
+        .event-title {
+            font-size: 1.1rem;
+            margin-bottom: 5px;
+        }
+
+        .event-time {
+            color: #718096;
+            font-size: 0.9rem;
+            margin-bottom: 5px;
+        }
+
+        .event-notification {
+            background: #e6fffa;
+            color: #234e52;
+            padding: 3px 8px;
+            border-radius: 12px;
+            font-size: 0.8rem;
+            display: inline-block;
+            margin-right: 5px;
+        }
+
+        .delete-btn {
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            background: #e53e3e;
+            color: white;
+            border: none;
+            border-radius: 50%;
+            width: 25px;
+            height: 25px;
+            cursor: pointer;
+            font-size: 12px;
+        }
+
+        .form-section {
+            background: rgba(255, 255, 255, 0.95);
+            border-radius: 15px;
+            padding: 20px;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+            margin-top: 20px;
+        }
+
+        .form-group {
+            margin-bottom: 15px;
+        }
+
+        .form-group label {
+            display: block;
+            margin-bottom: 5px;
+            font-weight: bold;
+            color: #4a5568;
+        }
+
+        .form-group input, .form-group select, .form-group textarea {
+            width: 100%;
+            padding: 10px;
+            border: 2px solid #e2e8f0;
+            border-radius: 8px;
+            font-size: 16px;
+            transition: border-color 0.3s;
+        }
+
+        .form-group input:focus, .form-group select:focus, .form-group textarea:focus {
+            outline: none;
+            border-color: #667eea;
+        }
+
+        .checkbox-group {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .btn {
+            background: #38a169;
+            color: white;
+            border: none;
+            padding: 12px 24px;
+            border-radius: 8px;
+            font-size: 16px;
+            cursor: pointer;
+            transition: background 0.3s;
+        }
+
+        .btn:hover {
+            background: #2f855a;
+        }
+
+        .notification-types {
+            display: flex;
+            gap: 15px;
+            flex-wrap: wrap;
+        }
+
+        .hidden {
+            display: none;
+        }
+
+        .image-preview {
+            margin-top: 10px;
+            text-align: center;
+        }
+
+        .image-preview img {
+            max-width: 200px;
+            max-height: 150px;
+            border-radius: 8px;
+            border: 2px solid #e2e8f0;
+        }
+
+        .audio-preview {
+            margin-top: 10px;
+        }
+
+        .audio-preview audio {
+            width: 100%;
+            border-radius: 8px;
+        }
+
+        .media-item {
+            margin-top: 10px;
+            padding: 10px;
+            background: #f0f4f8;
+            border-radius: 8px;
+            position: relative;
+        }
+
+        .media-item img {
+            max-width: 150px;
+            max-height: 100px;
+            border-radius: 6px;
+            margin-right: 10px;
+        }
+
+        .media-item audio {
+            width: 100%;
+            margin-top: 5px;
+        }
+
+        .remove-media {
+            position: absolute;
+            top: 5px;
+            right: 5px;
+            background: #e53e3e;
+            color: white;
+            border: none;
+            border-radius: 50%;
+            width: 20px;
+            height: 20px;
+            cursor: pointer;
+            font-size: 10px;
+        }
+
+        .media-gallery {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+            margin-top: 10px;
+        }
+
+        .media-thumbnail {
+            position: relative;
+            cursor: pointer;
+        }
+
+        .media-thumbnail img {
+            width: 60px;
+            height: 60px;
+            object-fit: cover;
+            border-radius: 6px;
+            border: 2px solid #e2e8f0;
+            transition: border-color 0.3s;
+        }
+
+        .media-thumbnail:hover img {
+            border-color: #667eea;
+        }
+
+        .audio-icon {
+            width: 60px;
+            height: 60px;
+            background: #667eea;
+            border-radius: 6px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-size: 24px;
+        }
+
+        @media (max-width: 768px) {
+            .main-content {
+                grid-template-columns: 1fr;
+            }
+            
+            .header h1 {
+                font-size: 2rem;
+            }
+        }
+    </style>
 </head>
 <body>
-  <header>MEU CALENDÁRIO - LEMBRETES E ANOTAÇÕES!</header>
-  <div class="container">
-    
-    <div class="calendar-container">
-      <div class="calendar card" id="calendarWrap"></div>
-    </div>
-
-    <div class="card" style="margin-top:20px">
-      <h3>Eventos rápidos do dia <span id="selectedDayEventsLabel">...</span></h3>
-      <div id="quickEventsList" class="day-preview">Nenhum dia selecionado</div>
-    </div>
-    
-    <div class="flex" style="margin-top:20px">
-      <div class="col card">
-        <h3>Detalhes e Anotações</h3>
-        <span id="selectedDayLabel" style="font-weight:600;display:block;margin-bottom:15px;color:var(--accent);">Nenhum dia selecionado</span>
-        <div id="notesPanel">
-          <label for="noteTitle">Título da Anotação</label>
-          <input type="text" id="noteTitle" placeholder="Ex: Consulta médica" />
-          
-          <label for="noteText">Texto / Descrição</label>
-          <textarea id="noteText" rows="4" placeholder="Digite sua anotação..."></textarea>
-
-          <label for="notificationType">Tipo de Lembrete</label>
-          <select id="notificationType">
-            <option value="">Nenhum</option>
-            <option value="email">E-mail</option>
-            <option value="whatsapp">WhatsApp</option>
-          </select>
-
-          <label for="contactInfo" id="contactLabel" style="display:none;">E-mail / WhatsApp</label>
-          <input type="text" id="contactInfo" style="display:none;" placeholder="Digite o e-mail ou número de WhatsApp" />
-
-          <div id="notificationSettings" style="display:none;">
-            <label>Lembrar com antecedência e horário</label>
-            <div class="notification-group">
-              <div>
-                <select id="reminderDays">
-                  <option value="30">30 dias</option>
-                  <option value="15">15 dias</option>
-                  <option value="7">7 dias</option>
-                  <option value="3">3 dias</option>
-                  <option value="1">1 dia</option>
-                </select>
-              </div>
-              <div>
-                <input type="time" id="reminderTime" value="09:00" />
-              </div>
-            </div>
-          </div>
-          
-          <label for="mediaInput">Upload de mídia (imagem, áudio ou vídeo)</label>
-          <input type="file" id="mediaInput" accept="image/*,audio/*,video/*" />
-          
-          <label>Gravar Áudio</label>
-          <div style="display:flex;gap:8px;align-items:center;margin-bottom:8px">
-            <button id="recStart" class="ghost">Gravar</button>
-            <button id="recStop" class="ghost" disabled>Parar</button>
-            <span id="recStatus" style="display:none;"></span>
-          </div>
-          
-          <div style="display:flex;gap:8px;margin-top:20px;align-items:center">
-            <button id="saveNote" class="primary">
-              Salvar Anotação
-              <span class="spinner" style="display:none;"></span>
-            </button>
-            <button id="clearInputs" class="ghost">Limpar</button>
-          </div>
+    <div class="container">
+        <div class="header">
+            <h1>📅 Meu Calendário Organizador</h1>
+            <p>Organize sua vida de forma inteligente</p>
         </div>
-      </div>
-      
-      <div class="col card">
-        <h3>Anotações do Dia</h3>
-        <div id="notesList" class="notes-list"></div>
-      </div>
+
+        <div class="main-content">
+            <div class="calendar-section">
+                <div class="calendar-header">
+                    <button class="nav-btn" onclick="previousMonth()">‹</button>
+                    <div class="month-year" id="monthYear"></div>
+                    <button class="nav-btn" onclick="nextMonth()">›</button>
+                </div>
+                <div class="calendar-grid" id="calendarGrid"></div>
+            </div>
+
+            <div class="events-section">
+                <h3>📋 Próximos Eventos</h3>
+                <div class="events-list" id="eventsList"></div>
+            </div>
+        </div>
+
+        <div class="form-section">
+            <h3>➕ Adicionar Novo Evento</h3>
+            <form id="eventForm">
+                <div class="form-group">
+                    <label for="eventTitle">Título do Evento:</label>
+                    <input type="text" id="eventTitle" required>
+                </div>
+
+                <div class="form-group">
+                    <label for="eventDate">Data:</label>
+                    <input type="date" id="eventDate" required>
+                </div>
+
+                <div class="form-group">
+                    <label for="eventTime">Horário:</label>
+                    <input type="time" id="eventTime" required>
+                </div>
+
+                <div class="form-group">
+                    <label for="eventDescription">Descrição:</label>
+                    <textarea id="eventDescription" rows="3"></textarea>
+                </div>
+
+                <div class="form-group">
+                    <label for="eventImage">Adicionar Imagem:</label>
+                    <input type="file" id="eventImage" accept="image/*" onchange="previewImage(event)">
+                    <div id="imagePreview" class="image-preview hidden"></div>
+                </div>
+
+                <div class="form-group">
+                    <label for="eventAudio">Adicionar Áudio:</label>
+                    <input type="file" id="eventAudio" accept="audio/*" onchange="previewAudio(event)">
+                    <div id="audioPreview" class="audio-preview hidden"></div>
+                </div>
+
+                <div class="form-group">
+                    <div class="checkbox-group">
+                        <input type="checkbox" id="enableNotifications">
+                        <label for="enableNotifications">Ativar lembretes</label>
+                    </div>
+                </div>
+
+                <div class="form-group hidden" id="notificationSettings">
+                    <label>Tipos de notificação:</label>
+                    <div class="notification-types">
+                        <div class="checkbox-group">
+                            <input type="checkbox" id="emailNotif">
+                            <label for="emailNotif">E-mail</label>
+                        </div>
+                        <div class="checkbox-group">
+                            <input type="checkbox" id="whatsappNotif">
+                            <label for="whatsappNotif">WhatsApp</label>
+                        </div>
+                    </div>
+                    
+                    <div class="form-group" style="margin-top: 15px;">
+                        <label for="notifyBefore">Lembrar antes:</label>
+                        <select id="notifyBefore">
+                            <option value="5">5 minutos</option>
+                            <option value="15">15 minutos</option>
+                            <option value="30">30 minutos</option>
+                            <option value="60" selected>1 hora</option>
+                            <option value="1440">1 dia</option>
+                        </select>
+                    </div>
+
+                    <div class="form-group" id="emailField" class="hidden">
+                        <label for="email">E-mail:</label>
+                        <input type="email" id="email" placeholder="seu@email.com">
+                    </div>
+
+                    <div class="form-group" id="phoneField" class="hidden">
+                        <label for="phone">WhatsApp:</label>
+                        <input type="tel" id="phone" placeholder="(11) 99999-9999">
+                    </div>
+                </div>
+
+                <button type="submit" class="btn">Adicionar Evento</button>
+            </form>
+        </div>
     </div>
-    
-  </div>
-  
-  <div id="feedbackMessage" class="feedback-message"></div>
-  
-  <script>
-    // ======= Módulo 1: Gerenciamento do Banco de Dados (IndexedDB) =======
-    const DB_NAME = 'calendar_notes_db_v1';
-    const DB_STORE = 'notes';
-    let db;
-    
-    const dbManager = {
-      async openDB() {
-        return new Promise((res, rej) => {
-          const req = indexedDB.open(DB_NAME, 1);
-          req.onupgradeneeded = e => { 
-            const idb = e.target.result;
-            if (!idb.objectStoreNames.contains(DB_STORE)) {
-              idb.createObjectStore(DB_STORE, { keyPath: 'id' });
-            }
-          };
-          req.onsuccess = e => { db = e.target.result; res(db); };
-          req.onerror = e => rej(e.target.error);
-        });
-      },
-      
-      async saveNote(note) {
-        return new Promise((res, rej) => {
-          const tx = db.transaction(DB_STORE, 'readwrite');
-          const store = tx.objectStore(DB_STORE);
-          store.put(note);
-          tx.oncomplete = () => res(note);
-          tx.onerror = e => rej(e.target.error);
-        });
-      },
-      
-      async deleteNote(id) {
-        return new Promise((res, rej) => {
-          const tx = db.transaction(DB_STORE, 'readwrite');
-          tx.objectStore(DB_STORE).delete(id);
-          tx.oncomplete = () => res();
-          tx.onerror = e => rej(e.target.error);
-        });
-      },
-      
-      async getNotesForDay(dateStr) {
-        return new Promise((res, rej) => {
-          const tx = db.transaction(DB_STORE, 'readonly');
-          const store = tx.objectStore(DB_STORE);
-          const req = store.getAll();
-          req.onsuccess = () => {
-            const all = req.result || [];
-            res(all.filter(n => n.date === dateStr).sort((a, b) => b.createdAt - a.createdAt));
-          };
-          req.onerror = e => rej(e.target.error);
-        });
-      },
 
-      async getEventsList() {
-        return new Promise((res, rej) => {
-          const events = [];
-          const tx = db.transaction(DB_STORE, 'readonly');
-          const store = tx.objectStore(DB_STORE);
-          const cursorRequest = store.openCursor();
-          const dates = new Set();
-          
-          cursorRequest.onsuccess = e => {
-            const cursor = e.target.result;
-            if (cursor) {
-              if (cursor.value.date) {
-                dates.add(cursor.value.date);
-              }
-              cursor.continue();
+    <script>
+        let currentDate = new Date();
+        let selectedDate = null;
+        let events = JSON.parse(localStorage.getItem('calendarEvents')) || [];
+
+        const monthNames = [
+            'Janeiro', 'Fevereiro', 'Março', 'Abril', 'Maio', 'Junho',
+            'Julho', 'Agosto', 'Setembro', 'Outubro', 'Novembro', 'Dezembro'
+        ];
+
+        const dayNames = ['Dom', 'Seg', 'Ter', 'Qua', 'Qui', 'Sex', 'Sab'];
+
+        function initCalendar() {
+            renderCalendar();
+            renderEvents();
+            setupEventListeners();
+        }
+
+        function renderCalendar() {
+            const monthYear = document.getElementById('monthYear');
+            const calendarGrid = document.getElementById('calendarGrid');
+            
+            monthYear.textContent = `${monthNames[currentDate.getMonth()]} ${currentDate.getFullYear()}`;
+            
+            calendarGrid.innerHTML = '';
+            
+            // Cabeçalho dos dias da semana
+            dayNames.forEach(day => {
+                const dayHeader = document.createElement('div');
+                dayHeader.className = 'calendar-day-header';
+                dayHeader.textContent = day;
+                calendarGrid.appendChild(dayHeader);
+            });
+
+            // Primeiro dia do mês e último dia do mês anterior
+            const firstDay = new Date(currentDate.getFullYear(), currentDate.getMonth(), 1);
+            const lastDay = new Date(currentDate.getFullYear(), currentDate.getMonth() + 1, 0);
+            const daysInMonth = lastDay.getDate();
+            const startingDayOfWeek = firstDay.getDay();
+
+            // Dias do mês anterior
+            const prevMonth = new Date(currentDate.getFullYear(), currentDate.getMonth() - 1, 0);
+            const daysInPrevMonth = prevMonth.getDate();
+            
+            for (let i = startingDayOfWeek - 1; i >= 0; i--) {
+                const dayElement = createDayElement(daysInPrevMonth - i, true);
+                calendarGrid.appendChild(dayElement);
+            }
+
+            // Dias do mês atual
+            for (let day = 1; day <= daysInMonth; day++) {
+                const dayElement = createDayElement(day, false);
+                calendarGrid.appendChild(dayElement);
+            }
+
+            // Dias do próximo mês para completar a grade
+            const totalCells = 42; // 6 semanas x 7 dias
+            const remainingCells = totalCells - (startingDayOfWeek + daysInMonth);
+            for (let day = 1; day <= remainingCells && remainingCells < 7; day++) {
+                const dayElement = createDayElement(day, true);
+                calendarGrid.appendChild(dayElement);
+            }
+        }
+
+        function createDayElement(day, isOtherMonth) {
+            const dayElement = document.createElement('div');
+            dayElement.className = 'calendar-day';
+            if (isOtherMonth) dayElement.className += ' other-month';
+            
+            dayElement.textContent = day;
+            
+            if (!isOtherMonth) {
+                const dayDate = new Date(currentDate.getFullYear(), currentDate.getMonth(), day);
+                const dateString = dayDate.toISOString().split('T')[0];
+                
+                // Verificar se há eventos neste dia
+                const hasEvent = events.some(event => event.date === dateString);
+                if (hasEvent) {
+                    dayElement.className += ' has-event';
+                    const dot = document.createElement('div');
+                    dot.className = 'event-dot';
+                    dayElement.appendChild(dot);
+                }
+                
+                dayElement.onclick = () => selectDate(dayDate);
+            }
+            
+            return dayElement;
+        }
+
+        function selectDate(date) {
+            selectedDate = date;
+            document.getElementById('eventDate').value = date.toISOString().split('T')[0];
+            
+            // Destacar o dia selecionado
+            document.querySelectorAll('.calendar-day').forEach(day => {
+                day.classList.remove('selected');
+            });
+            event.target.classList.add('selected');
+        }
+
+        function previousMonth() {
+            currentDate.setMonth(currentDate.getMonth() - 1);
+            renderCalendar();
+        }
+
+        function nextMonth() {
+            currentDate.setMonth(currentDate.getMonth() + 1);
+            renderCalendar();
+        }
+
+        function renderEvents() {
+            const eventsList = document.getElementById('eventsList');
+            eventsList.innerHTML = '';
+
+            if (events.length === 0) {
+                eventsList.innerHTML = '<p style="text-align: center; color: #718096;">Nenhum evento cadastrado</p>';
+                return;
+            }
+
+            // Ordenar eventos por data e hora
+            const sortedEvents = events.sort((a, b) => {
+                const dateA = new Date(`${a.date}T${a.time}`);
+                const dateB = new Date(`${b.date}T${b.time}`);
+                return dateA - dateB;
+            });
+
+            sortedEvents.forEach((event, index) => {
+                const eventDate = new Date(`${event.date}T${event.time}`);
+                const now = new Date();
+                
+                // Pular eventos passados
+                if (eventDate < now) return;
+
+                const eventElement = document.createElement('div');
+                eventElement.className = 'event-item';
+                
+                const dateFormatted = eventDate.toLocaleDateString('pt-BR', {
+                    weekday: 'long',
+                    day: '2-digit',
+                    month: 'long'
+                });
+
+                const timeFormatted = eventDate.toLocaleTimeString('pt-BR', {
+                    hour: '2-digit',
+                    minute: '2-digit'
+                });
+
+                eventElement.innerHTML = `
+                    <button class="delete-btn" onclick="deleteEvent(${index})">×</button>
+                    <div class="event-date">${dateFormatted}</div>
+                    <div class="event-title">${event.title}</div>
+                    <div class="event-time">🕒 ${timeFormatted}</div>
+                    ${event.description ? `<div style="color: #718096; margin-top: 5px;">${event.description}</div>` : ''}
+                    ${event.image || event.audio ? `<div class="media-gallery">${renderEventMedia(event, index)}</div>` : ''}
+                    ${event.notifications ? `
+                        <div style="margin-top: 8px;">
+                            ${event.notifications.email ? '<span class="event-notification">📧 E-mail</span>' : ''}
+                            ${event.notifications.whatsapp ? '<span class="event-notification">📱 WhatsApp</span>' : ''}
+                            <span class="event-notification">⏰ ${event.notifyBefore} min antes</span>
+                        </div>
+                    ` : ''}
+                `;
+                
+                eventsList.appendChild(eventElement);
+            });
+        }
+
+        function deleteEvent(index) {
+            if (confirm('Tem certeza que deseja excluir este evento?')) {
+                events.splice(index, 1);
+                saveEvents();
+                renderEvents();
+                renderCalendar();
+            }
+        }
+
+        function renderEventMedia(event, eventIndex) {
+            let mediaHtml = '';
+            
+            if (event.image) {
+                mediaHtml += `
+                    <div class="media-thumbnail" onclick="openImageModal('${event.image}')">
+                        <img src="${event.image}" alt="Imagem do evento">
+                    </div>
+                `;
+            }
+            
+            if (event.audio) {
+                mediaHtml += `
+                    <div class="media-thumbnail" onclick="playAudio('${event.audio}')">
+                        <div class="audio-icon">🎵</div>
+                    </div>
+                `;
+            }
+            
+            return mediaHtml;
+        }
+
+        function openImageModal(imageSrc) {
+            // Criar modal para visualizar imagem
+            const modal = document.createElement('div');
+            modal.style.cssText = `
+                position: fixed;
+                top: 0;
+                left: 0;
+                width: 100%;
+                height: 100%;
+                background: rgba(0,0,0,0.8);
+                display: flex;
+                justify-content: center;
+                align-items: center;
+                z-index: 1000;
+                cursor: pointer;
+            `;
+            
+            const img = document.createElement('img');
+            img.src = imageSrc;
+            img.style.cssText = `
+                max-width: 90%;
+                max-height: 90%;
+                border-radius: 10px;
+            `;
+            
+            modal.appendChild(img);
+            document.body.appendChild(modal);
+            
+            modal.onclick = () => document.body.removeChild(modal);
+        }
+
+        function playAudio(audioSrc) {
+            const audio = new Audio(audioSrc);
+            audio.play();
+        }
+
+        function previewImage(event) {
+            const file = event.target.files[0];
+            const preview = document.getElementById('imagePreview');
+            
+            if (file) {
+                const reader = new FileReader();
+                reader.onload = function(e) {
+                    preview.innerHTML = `
+                        <img src="${e.target.result}" alt="Preview">
+                        <button class="remove-media" onclick="removeImagePreview()">×</button>
+                    `;
+                    preview.classList.remove('hidden');
+                };
+                reader.readAsDataURL(file);
+            }
+        }
+
+        function previewAudio(event) {
+            const file = event.target.files[0];
+            const preview = document.getElementById('audioPreview');
+            
+            if (file) {
+                const reader = new FileReader();
+                reader.onload = function(e) {
+                    preview.innerHTML = `
+                        <audio controls>
+                            <source src="${e.target.result}" type="${file.type}">
+                        </audio>
+                        <button class="remove-media" onclick="removeAudioPreview()">×</button>
+                    `;
+                    preview.classList.remove('hidden');
+                };
+                reader.readAsDataURL(file);
+            }
+        }
+
+        function removeImagePreview() {
+            document.getElementById('eventImage').value = '';
+            document.getElementById('imagePreview').innerHTML = '';
+            document.getElementById('imagePreview').classList.add('hidden');
+        }
+
+        function removeAudioPreview() {
+            document.getElementById('eventAudio').value = '';
+            document.getElementById('audioPreview').innerHTML = '';
+            document.getElementById('audioPreview').classList.add('hidden');
+        }
+
+        function saveEvents() {
+            localStorage.setItem('calendarEvents', JSON.stringify(events));
+        }
+
+        function setupEventListeners() {
+            // Toggle das configurações de notificação
+            document.getElementById('enableNotifications').addEventListener('change', function() {
+                const notificationSettings = document.getElementById('notificationSettings');
+                if (this.checked) {
+                    notificationSettings.classList.remove('hidden');
+                } else {
+                    notificationSettings.classList.add('hidden');
+                }
+            });
+
+            // Toggle dos campos de contato
+            document.getElementById('emailNotif').addEventListener('change', function() {
+                const emailField = document.getElementById('emailField');
+                if (this.checked) {
+                    emailField.classList.remove('hidden');
+                } else {
+                    emailField.classList.add('hidden');
+                }
+            });
+
+            document.getElementById('whatsappNotif').addEventListener('change', function() {
+                const phoneField = document.getElementById('phoneField');
+                if (this.checked) {
+                    phoneField.classList.remove('hidden');
+                } else {
+                    phoneField.classList.add('hidden');
+                }
+            });
+
+            // Submit do formulário
+            document.getElementById('eventForm').addEventListener('submit', function(e) {
+                e.preventDefault();
+                addEvent();
+            });
+        }
+
+        function addEvent() {
+            const title = document.getElementById('eventTitle').value;
+            const date = document.getElementById('eventDate').value;
+            const time = document.getElementById('eventTime').value;
+            const description = document.getElementById('eventDescription').value;
+            const enableNotifications = document.getElementById('enableNotifications').checked;
+            const imageFile = document.getElementById('eventImage').files[0];
+            const audioFile = document.getElementById('eventAudio').files[0];
+
+            const newEvent = {
+                title,
+                date,
+                time,
+                description,
+                created: new Date().toISOString()
+            };
+
+            // Processar imagem
+            if (imageFile) {
+                const reader = new FileReader();
+                reader.onload = function(e) {
+                    newEvent.image = e.target.result;
+                    processEvent();
+                };
+                reader.readAsDataURL(imageFile);
+            } else if (audioFile) {
+                // Se não há imagem, processar áudio
+                const reader = new FileReader();
+                reader.onload = function(e) {
+                    newEvent.audio = e.target.result;
+                    processEvent();
+                };
+                reader.readAsDataURL(audioFile);
             } else {
-              res(Array.from(dates));
+                processEvent();
             }
-          };
-          cursorRequest.onerror = e => rej(e.target.error);
-        });
-      }
-    };
 
-    // ======= Módulo 2: Manipulação da UI e do Calendário =======
-    const ui = {
-      calendarWrap: document.getElementById('calendarWrap'),
-      selectedDayLabel: document.getElementById('selectedDayLabel'),
-      selectedDayEventsLabel: document.getElementById('selectedDayEventsLabel'),
-      quickEventsList: document.getElementById('quickEventsList'),
-      notesList: document.getElementById('notesList'),
-      noteTitle: document.getElementById('noteTitle'),
-      noteText: document.getElementById('noteText'),
-      mediaInput: document.getElementById('mediaInput'),
-      notificationType: document.getElementById('notificationType'),
-      contactInfo: document.getElementById('contactInfo'),
-      contactLabel: document.getElementById('contactLabel'),
-      notificationSettings: document.getElementById('notificationSettings'),
-      reminderDays: document.getElementById('reminderDays'),
-      reminderTime: document.getElementById('reminderTime'),
-      saveNoteBtn: document.getElementById('saveNote'),
-      clearInputsBtn: document.getElementById('clearInputs'),
-      recStartBtn: document.getElementById('recStart'),
-      recStopBtn: document.getElementById('recStop'),
-      recStatus: document.getElementById('recStatus'),
-      feedbackMessage: document.getElementById('feedbackMessage'),
-
-      selectedDate: null,
-      currentMonth: new Date().getMonth(),
-      currentYear: new Date().getFullYear(),
-      mediaRecorder: null,
-      recordedChunks: [],
-
-      async renderCalendar() {
-        const year = ui.currentYear;
-        const month = ui.currentMonth;
-        const date = new Date(year, month, 1);
-        const daysInMonth = new Date(year, month + 1, 0).getDate();
-        const startDay = date.getDay();
-        const events = await dbManager.getEventsList();
-        
-        let html = `<div class="calendar-header">
-                      <button onclick="app.prevMonth()">‹</button>
-                      <button onclick="app.prevYear()">«</button>
-                      <div>
-                        <select id="month-select" onchange="app.jumpToMonth(this.value)">
-                          ${Array.from({length:12},(_,i)=>`<option value="${i}" ${i===month?'selected':''}>${new Date(year,i,1).toLocaleString('pt-BR',{month:'long'})}</option>`).join('')}
-                        </select>
-                        <select id="year-select" onchange="app.jumpToYear(this.value)">
-                          ${Array.from({length:20},(_,i)=>`<option value="${year-10+i}" ${year-10+i===year?'selected':''}>${year-10+i}</option>`).join('')}
-                        </select>
-                      </div>
-                      <button onclick="app.nextYear()">»</button>
-                      <button onclick="app.nextMonth()">›</button>
-                    </div>`;
-        html += '<table><thead><tr><th>Dom</th><th>Seg</th><th>Ter</th><th>Qua</th><th>Qui</th><th>Sex</th><th>Sáb</th></tr></thead><tbody>';
-        let day = 1;
-        
-        for (let i = 0; i < 6; i++) {
-          html += '<tr>';
-          for (let j = 0; j < 7; j++) {
-            if (i === 0 && j < startDay) {
-              html += '<td></td>';
-            } else if (day > daysInMonth) {
-              html += '<td></td>';
-            } else {
-              const dateStr = `${year}-${String(month + 1).padStart(2, '0')}-${String(day).padStart(2, '0')}`;
-              const hasEvent = events.includes(dateStr);
-              const isSelected = dateStr === ui.selectedDate;
-              const cls = (hasEvent ? 'has-event' : '') + (isSelected ? ' selected' : '');
-              html += `<td data-date="${dateStr}" class="${cls}"><div class="daynum">${day}</div>${hasEvent ? '<div class="dot" title="Tem evento"></div>' : ''}</td>`;
-              day++;
+            function processEvent() {
+                // Processar áudio se ainda não foi processado e existe
+                if (audioFile && !newEvent.audio) {
+                    const reader = new FileReader();
+                    reader.onload = function(e) {
+                        newEvent.audio = e.target.result;
+                        finalizeEvent();
+                    };
+                    reader.readAsDataURL(audioFile);
+                } else {
+                    finalizeEvent();
+                }
             }
-          }
-          html += '</tr>';
-        }
-        html += '</tbody></table>';
-        ui.calendarWrap.innerHTML = html;
-        
-        ui.calendarWrap.querySelectorAll('td[data-date]').forEach(td => {
-          td.addEventListener('click', () => {
-            document.querySelectorAll('td.selected').forEach(x => x.classList.remove('selected'));
-            td.classList.add('selected');
-            ui.selectedDate = td.getAttribute('data-date');
-            ui.selectedDayLabel.textContent = new Date(ui.selectedDate + 'T12:00:00').toLocaleDateString('pt-BR', { day: 'numeric', month: 'long', year: 'numeric' });
-            ui.selectedDayEventsLabel.textContent = new Date(ui.selectedDate + 'T12:00:00').toLocaleDateString('pt-BR', { day: 'numeric', month: 'long', year: 'numeric' });
-            ui.loadDayData(ui.selectedDate);
-          });
-        });
-        
-        if (ui.selectedDate) {
-          document.querySelector(`td[data-date='${ui.selectedDate}']`)?.classList.add('selected');
-          ui.loadDayData(ui.selectedDate);
-        }
-      },
 
-      async loadDayData(dateStr) {
-        const notes = await dbManager.getNotesForDay(dateStr);
-        
-        ui.quickEventsList.innerHTML = '';
-        if (notes.length === 0) {
-          ui.quickEventsList.innerHTML = 'Nenhuma anotação neste dia';
-        } else {
-          notes.forEach(n => {
-            const el = document.createElement('div');
-            el.className = 'event-item';
-            el.textContent = n.title || 'Anotação sem título';
-            ui.quickEventsList.appendChild(el);
-          });
-        }
-        
-        ui.notesList.innerHTML = '';
-        if (notes.length === 0) {
-          ui.notesList.innerHTML = '<div class="small">Nenhuma anotação para este dia</div>';
-          return;
-        }
-        
-        for (const n of notes) {
-          const el = document.createElement('div');
-          el.className = 'note';
-          let inner = `<div style='font-weight:700'>${ui.escapeHtml(n.title) || 'Sem título'}</div>`;
-          inner += `<div class="meta">${new Date(n.createdAt).toLocaleString('pt-BR')}</div>`;
-          inner += `<button data-id="${n.id}" class="delete-btn">✖</button>`;
-          
-          if (n.reminder) {
-            inner += `<div class="meta" style="margin-top:8px; font-weight: 600;">
-                       Lembrete: ${n.reminder.daysBefore} dias antes às ${n.reminder.time} por ${n.reminder.type}
-                    </div>`;
-            inner += `<div class="meta">Contato: ${ui.escapeHtml(n.reminder.contact)}</div>`;
-          }
+            function finalizeEvent() {
+                if (enableNotifications) {
+                    const emailNotif = document.getElementById('emailNotif').checked;
+                    const whatsappNotif = document.getElementById('whatsappNotif').checked;
+                    const notifyBefore = parseInt(document.getElementById('notifyBefore').value);
+                    const email = document.getElementById('email').value;
+                    const phone = document.getElementById('phone').value;
 
-          if (n.text) inner += `<div style="margin-top:6px">${ui.escapeHtml(n.text)}</div>`;
-          
-          if (n.media) {
-            const mediaUrl = URL.createObjectURL(n.media);
-            if (n.mediaType === 'image') inner += `<img src="${mediaUrl}" alt="media"/>`;
-            else if (n.mediaType === 'audio') inner += `<audio controls src="${mediaUrl}"></audio>`;
-            else if (n.mediaType === 'video') inner += `<video controls src="${mediaUrl}"></video>`;
-          }
-          
-          el.innerHTML = inner;
-          ui.notesList.appendChild(el);
-          
-          el.querySelector('.delete-btn')?.addEventListener('click', async () => {
-            if (!confirm('Apagar anotação?')) return;
-            await dbManager.deleteNote(n.id);
-            ui.showFeedback('Anotação apagada!', 'success');
-            ui.loadDayData(dateStr);
-            ui.renderCalendar();
-          });
-        }
-      },
+                    newEvent.notifications = {
+                        email: emailNotif,
+                        whatsapp: whatsappNotif,
+                        emailAddress: email,
+                        phoneNumber: phone
+                    };
+                    newEvent.notifyBefore = notifyBefore;
 
-      toggleNotificationFields() {
-        if (ui.notificationType.value) {
-          ui.contactLabel.style.display = 'block';
-          ui.contactInfo.style.display = 'block';
-          ui.notificationSettings.style.display = 'block';
-          if (ui.notificationType.value === 'email') {
-            ui.contactInfo.type = 'email';
-            ui.contactInfo.placeholder = 'Digite o e-mail para lembrete';
-          } else {
-            ui.contactInfo.type = 'tel';
-            ui.contactInfo.placeholder = 'Digite o número do WhatsApp (ex: +5511999998888)';
-          }
-        } else {
-          ui.contactLabel.style.display = 'none';
-          ui.contactInfo.style.display = 'none';
-          ui.notificationSettings.style.display = 'none';
-        }
-      },
+                    // Simular agendamento de notificação
+                    scheduleNotification(newEvent);
+                }
 
-      clearInputs() {
-        ui.noteTitle.value = '';
-        ui.noteText.value = '';
-        ui.mediaInput.value = '';
-        ui.notificationType.value = '';
-        ui.contactInfo.value = '';
-        ui.toggleNotificationFields();
-        ui.recStartBtn.disabled = false;
-        ui.recStopBtn.disabled = true;
-        ui.recStatus.style.display = 'none';
-      },
-      
-      showFeedback(message, type = 'success') {
-        ui.feedbackMessage.textContent = message;
-        ui.feedbackMessage.className = `feedback-message ${type}`;
-        ui.feedbackMessage.style.display = 'block';
-        setTimeout(() => {
-          ui.feedbackMessage.style.display = 'none';
-        }, 3000);
-      },
+                events.push(newEvent);
+                saveEvents();
+                renderEvents();
+                renderCalendar();
 
-      showLoading(state) {
-        const spinner = ui.saveNoteBtn.querySelector('.spinner');
-        if (state) {
-          ui.saveNoteBtn.classList.add('loading');
-          spinner.style.display = 'inline-block';
-          ui.saveNoteBtn.textContent = 'Salvando...';
-        } else {
-          ui.saveNoteBtn.classList.remove('loading');
-          spinner.style.display = 'none';
-          ui.saveNoteBtn.innerHTML = 'Salvar Anotação <span class="spinner" style="display:none;"></span>';
-        }
-      },
+                // Limpar formulário
+                document.getElementById('eventForm').reset();
+                document.getElementById('notificationSettings').classList.add('hidden');
+                document.getElementById('emailField').classList.add('hidden');
+                document.getElementById('phoneField').classList.add('hidden');
+                document.getElementById('imagePreview').classList.add('hidden');
+                document.getElementById('audioPreview').classList.add('hidden');
+                document.getElementById('imagePreview').innerHTML = '';
+                document.getElementById('audioPreview').innerHTML = '';
 
-      fileToBlob(file) {
-        return new Promise((res) => {
-          const reader = new FileReader();
-          reader.onload = () => { res(new Blob([new Uint8Array(reader.result)], { type: file.type })); };
-          reader.readAsArrayBuffer(file);
-        });
-      },
-
-      escapeHtml(str) {
-        if (typeof str !== 'string') return str;
-        return str.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
-      }
-    };
-
-    // ======= Módulo 3: Lógica da Aplicação (Event Listeners) =======
-    const app = {
-      init() {
-        dbManager.openDB().then(() => {
-          ui.renderCalendar();
-          app.setupEventListeners();
-        }).catch(err => {
-          console.error("Erro ao iniciar o banco de dados:", err);
-          ui.showFeedback("Erro ao carregar o aplicativo. Tente novamente.", "error");
-        });
-      },
-
-      setupEventListeners() {
-        ui.notificationType.addEventListener('change', ui.toggleNotificationFields);
-        ui.clearInputsBtn.addEventListener('click', ui.clearInputs);
-        ui.saveNoteBtn.addEventListener('click', app.saveNote);
-        ui.recStartBtn.addEventListener('click', app.startRecording);
-        ui.recStopBtn.addEventListener('click', app.stopRecording);
-      },
-
-      async saveNote() {
-        if (!ui.selectedDate) {
-          ui.showFeedback('Selecione um dia no calendário para salvar a anotação.', 'error');
-          return;
+                alert('Evento adicionado com sucesso!');
+            }
         }
 
-        ui.showLoading(true);
+        function scheduleNotification(event) {
+            const eventDateTime = new Date(`${event.date}T${event.time}`);
+            const notificationTime = new Date(eventDateTime.getTime() - (event.notifyBefore * 60 * 1000));
+            const now = new Date();
 
-        const id = Date.now().toString(36) + Math.random().toString(36).slice(2, 6);
-        const note = {
-          id,
-          date: ui.selectedDate,
-          title: ui.noteTitle.value.trim(),
-          text: ui.noteText.value.trim(),
-          createdAt: Date.now(),
-        };
+            if (notificationTime > now) {
+                const timeUntilNotification = notificationTime.getTime() - now.getTime();
+                
+                setTimeout(() => {
+                    showNotification(event);
+                }, timeUntilNotification);
 
-        if (ui.notificationType.value) {
-          note.reminder = {
-            type: ui.notificationType.value,
-            contact: ui.contactInfo.value.trim(),
-            daysBefore: ui.reminderDays.value,
-            time: ui.reminderTime.value
-          };
-        }
-        
-        if (ui.mediaInput.files && ui.mediaInput.files[0]) {
-          const file = ui.mediaInput.files[0];
-          note.media = await ui.fileToBlob(file);
-          note.mediaType = file.type.split('/')[0];
+                console.log(`Notificação agendada para: ${notificationTime.toLocaleString('pt-BR')}`);
+            }
         }
 
-        try {
-          await dbManager.saveNote(note);
-          await ui.loadDayData(ui.selectedDate);
-          ui.clearInputs();
-          ui.renderCalendar();
-          ui.showFeedback('Anotação salva com sucesso!', 'success');
-        } catch (e) {
-          console.error("Erro ao salvar a anotação:", e);
-          ui.showFeedback('Erro ao salvar a anotação.', 'error');
-        } finally {
-          ui.showLoading(false);
-        }
-      },
+        function showNotification(event) {
+            // Verificar se o navegador suporta notificações
+            if ('Notification' in window) {
+                if (Notification.permission === 'granted') {
+                    new Notification(`🔔 Lembrete: ${event.title}`, {
+                        body: `Seu evento começa em ${event.notifyBefore} minutos!`,
+                        icon: '📅'
+                    });
+                } else if (Notification.permission !== 'denied') {
+                    Notification.requestPermission().then(permission => {
+                        if (permission === 'granted') {
+                            new Notification(`🔔 Lembrete: ${event.title}`, {
+                                body: `Seu evento começa em ${event.notifyBefore} minutos!`,
+                                icon: '📅'
+                            });
+                        }
+                    });
+                }
+            }
 
-      async startRecording() {
-        if (!navigator.mediaDevices) {
-          return ui.showFeedback('Gravação não suportada neste navegador.', 'error');
-        }
-        try {
-          const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
-          ui.mediaRecorder = new MediaRecorder(stream);
-          ui.recordedChunks = [];
-          
-          let startTime = Date.now();
-          const updateStatus = setInterval(() => {
-              const elapsed = Date.now() - startTime;
-              const seconds = Math.floor(elapsed / 1000);
-              const minutes = Math.floor(seconds / 60);
-              const remainingSeconds = seconds % 60;
-              ui.recStatus.textContent = `Gravando... ${String(minutes).padStart(2, '0')}:${String(remainingSeconds).padStart(2, '0')}`;
-          }, 1000);
+            // Simular envio de notificações
+            if (event.notifications) {
+                if (event.notifications.email && event.notifications.emailAddress) {
+                    console.log(`📧 E-mail enviado para: ${event.notifications.emailAddress}`);
+                    alert(`📧 E-mail de lembrete seria enviado para: ${event.notifications.emailAddress}`);
+                }
 
-          ui.mediaRecorder.ondataavailable = e => { if (e.data.size > 0) ui.recordedChunks.push(e.data); };
-          ui.mediaRecorder.onstop = () => {
-            clearInterval(updateStatus);
-            const blob = new Blob(ui.recordedChunks, { type: 'audio/webm' });
-            const file = new File([blob], 'recording.webm', { type: blob.type });
-            const dt = new DataTransfer(); dt.items.add(file); ui.mediaInput.files = dt.files;
-            ui.recStartBtn.disabled = false; ui.recStopBtn.disabled = true;
-            ui.recStatus.textContent = 'Áudio pronto!';
-            ui.showFeedback('Áudio gravado com sucesso!', 'success');
-          };
-          
-          ui.mediaRecorder.start();
-          ui.recStartBtn.disabled = true;
-          ui.recStopBtn.disabled = false;
-          ui.recStatus.style.display = 'inline-block';
-        } catch (e) {
-          ui.showFeedback('Permissão de microfone negada ou erro: ' + e.message, 'error');
+                if (event.notifications.whatsapp && event.notifications.phoneNumber) {
+                    console.log(`📱 WhatsApp enviado para: ${event.notifications.phoneNumber}`);
+                    alert(`📱 Mensagem de WhatsApp seria enviada para: ${event.notifications.phoneNumber}`);
+                }
+            }
         }
-      },
 
-      stopRecording() {
-        if (ui.mediaRecorder && ui.mediaRecorder.state !== 'inactive') {
-          ui.mediaRecorder.stop();
+        // Verificar notificações pendentes a cada minuto
+        setInterval(() => {
+            const now = new Date();
+            events.forEach(event => {
+                if (event.notifications) {
+                    const eventDateTime = new Date(`${event.date}T${event.time}`);
+                    const notificationTime = new Date(eventDateTime.getTime() - (event.notifyBefore * 60 * 1000));
+                    
+                    // Verificar se é hora da notificação (com margem de 30 segundos)
+                    if (Math.abs(now.getTime() - notificationTime.getTime()) < 30000 && !event.notificationSent) {
+                        showNotification(event);
+                        event.notificationSent = true;
+                        saveEvents();
+                    }
+                }
+            });
+        }, 60000); // Verificar a cada minuto
+
+        // Solicitar permissão para notificações ao carregar a página
+        if ('Notification' in window && Notification.permission === 'default') {
+            Notification.requestPermission();
         }
-      },
 
-      prevMonth() { ui.currentMonth--; if (ui.currentMonth < 0) { ui.currentMonth = 11; ui.currentYear--; } ui.renderCalendar(); },
-      nextMonth() { ui.currentMonth++; if (ui.currentMonth > 11) { ui.currentMonth = 0; ui.currentYear++; } ui.renderCalendar(); },
-      prevYear() { ui.currentYear--; ui.renderCalendar(); },
-      nextYear() { ui.currentYear++; ui.renderCalendar(); },
-      jumpToMonth(month) { ui.currentMonth = parseInt(month); ui.renderCalendar(); },
-      jumpToYear(year) { ui.currentYear = parseInt(year); ui.renderCalendar(); }
-    };
-    
-    // Inicia a aplicação
-    app.init();
-  </script>
+        // Definir data padrão como hoje
+        document.getElementById('eventDate').value = new Date().toISOString().split('T')[0];
+
+        // Inicializar calendário
+        initCalendar();
+    </script>
 </body>
 </html>
