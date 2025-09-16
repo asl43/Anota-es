@@ -14,15 +14,17 @@
       --accent:#4a90e2;
       --accent-dark:#357ebd;
       --muted:#6b7280;
+      --success:#28a745;
       --primary-gradient:linear-gradient(45deg, #4a90e2, #75b3f2);
     }
     *{box-sizing:border-box}
     body{font-family:'Poppins',sans-serif;background:var(--bg);margin:0;color:#333}
     header{background:var(--primary-gradient);color:#fff;padding:24px;text-align:center;font-weight:700;box-shadow:0 4px 12px rgba(0,0,0,0.1);}
     h3, h4{margin-top:0;}
-    .container{max-width:1200px;margin:24px auto;padding:15px}
+    .container{max-width:1000px;margin:24px auto;padding:15px}
 
     /* Calendar */
+    .calendar-container{max-width:800px;margin:0 auto;}
     .calendar{background:var(--card);border-radius:15px;padding:20px;box-shadow:0 10px 30px rgba(12,24,48,0.08);}
     .calendar-header{display:flex;justify-content:space-between;align-items:center;margin-bottom:15px}
     .calendar-header button{background:transparent;border:none;font-size:24px;cursor:pointer;color:var(--accent);transition:transform 0.2s;}
@@ -43,8 +45,8 @@
     .day-preview .event-item{background:rgba(74,144,226,0.15);color:var(--accent-dark);padding:6px 10px;border-radius:20px;font-size:14px;cursor:pointer;font-weight:600;}
     
     /* layout */
-    .flex{display:flex;gap:20px}
-    .col{flex:1}
+    .flex{display:flex;gap:20px;flex-wrap: wrap;}
+    .col{flex:1;min-width: 300px;}
     .card{background:var(--card);padding:20px;border-radius:15px;box-shadow:0 6px 18px rgba(12,24,48,0.04)}
     
     /* notes area */
@@ -57,20 +59,66 @@
     
     /* controls */
     label{font-size:14px;color:var(--muted);display:block;margin-top:15px;margin-bottom:8px;font-weight:600;}
-    input[type=text],textarea,select,input[type=file]{width:100%;padding:12px;border-radius:10px;border:1px solid #e6e9ef;font-family:inherit;font-size:1em;transition:border-color 0.2s;}
-    input[type=text]:focus,textarea:focus{outline:none;border-color:var(--accent);}
+    input[type=text],input[type=email],input[type=tel],input[type=time],textarea,select,input[type=file]{width:100%;padding:12px;border-radius:10px;border:1px solid #e6e9ef;font-family:inherit;font-size:1em;transition:border-color 0.2s;}
+    input[type=text]:focus,input[type=email]:focus,input[type=tel]:focus,input[type=time]:focus,textarea:focus{outline:none;border-color:var(--accent);}
+    .notification-group{display: flex; gap: 10px; align-items: flex-end;}
+    .notification-group > div {flex: 1;}
+    .notification-group select{width: auto;}
+
     button{padding:10px 15px;border-radius:10px;border:none;cursor:pointer;font-family:inherit;font-weight:600;}
     .primary{background:var(--accent);color:#fff;box-shadow:0 4px 10px rgba(74,144,226,0.3);}
     .primary:hover{background:var(--accent-dark);}
     .ghost{background:transparent;border:1px solid #e6e9ef;color:var(--muted);}
     .ghost:hover{background-color:#f0f7ff;}
 
-    @media(max-width:900px){
+    .feedback-message {
+      position: fixed;
+      bottom: 20px;
+      left: 50%;
+      transform: translateX(-50%);
+      padding: 12px 20px;
+      border-radius: 8px;
+      color: white;
+      font-weight: 600;
+      display: none;
+      z-index: 1000;
+    }
+    .feedback-message.success { background-color: var(--success); }
+    .feedback-message.error { background-color: #dc3545; }
+
+    #saveNote.loading .spinner {
+      border: 4px solid rgba(255, 255, 255, 0.3);
+      border-top: 4px solid #fff;
+      border-radius: 50%;
+      width: 20px;
+      height: 20px;
+      animation: spin 1s linear infinite;
+      margin-left: 10px;
+      display: inline-block;
+      vertical-align: middle;
+    }
+    #saveNote.loading { pointer-events: none; }
+    
+    #recStatus {
+      font-size: 14px;
+      color: #e44d26;
+      display: none;
+      font-weight: 600;
+      margin-left: 10px;
+    }
+
+    @keyframes spin {
+      0% { transform: rotate(0deg); }
+      100% { transform: rotate(360deg); }
+    }
+
+    @media(max-width:768px){
       .flex{flex-direction:column}
       .container{padding:10px;margin:10px auto;}
       header{padding:18px;}
       .card{padding:15px;}
       .calendar td{min-height:60px;}
+      .notification-group{flex-direction: column; align-items: stretch;}
     }
   </style>
 </head>
@@ -78,7 +126,10 @@
   <header>MEU CALENDÁRIO - LEMBRETES E ANOTAÇÕES!</header>
   <div class="container">
     
-    <div class="calendar card" id="calendarWrap"></div>
+    <div class="calendar-container">
+      <div class="calendar card" id="calendarWrap"></div>
+    </div>
+
     <div class="card" style="margin-top:20px">
       <h3>Eventos rápidos do dia <span id="selectedDayEventsLabel">...</span></h3>
       <div id="quickEventsList" class="day-preview">Nenhum dia selecionado</div>
@@ -94,18 +145,50 @@
           
           <label for="noteText">Texto / Descrição</label>
           <textarea id="noteText" rows="4" placeholder="Digite sua anotação..."></textarea>
+
+          <label for="notificationType">Tipo de Lembrete</label>
+          <select id="notificationType">
+            <option value="">Nenhum</option>
+            <option value="email">E-mail</option>
+            <option value="whatsapp">WhatsApp</option>
+          </select>
+
+          <label for="contactInfo" id="contactLabel" style="display:none;">E-mail / WhatsApp</label>
+          <input type="text" id="contactInfo" style="display:none;" placeholder="Digite o e-mail ou número de WhatsApp" />
+
+          <div id="notificationSettings" style="display:none;">
+            <label>Lembrar com antecedência e horário</label>
+            <div class="notification-group">
+              <div>
+                <select id="reminderDays">
+                  <option value="30">30 dias</option>
+                  <option value="15">15 dias</option>
+                  <option value="7">7 dias</option>
+                  <option value="3">3 dias</option>
+                  <option value="1">1 dia</option>
+                </select>
+              </div>
+              <div>
+                <input type="time" id="reminderTime" value="09:00" />
+              </div>
+            </div>
+          </div>
           
           <label for="mediaInput">Upload de mídia (imagem, áudio ou vídeo)</label>
           <input type="file" id="mediaInput" accept="image/*,audio/*,video/*" />
           
           <label>Gravar Áudio</label>
-          <div style="display:flex;gap:8px;margin-bottom:8px">
+          <div style="display:flex;gap:8px;align-items:center;margin-bottom:8px">
             <button id="recStart" class="ghost">Gravar</button>
             <button id="recStop" class="ghost" disabled>Parar</button>
+            <span id="recStatus" style="display:none;"></span>
           </div>
           
           <div style="display:flex;gap:8px;margin-top:20px;align-items:center">
-            <button id="saveNote" class="primary">Salvar Anotação</button>
+            <button id="saveNote" class="primary">
+              Salvar Anotação
+              <span class="spinner" style="display:none;"></span>
+            </button>
             <button id="clearInputs" class="ghost">Limpar</button>
           </div>
         </div>
@@ -119,273 +202,421 @@
     
   </div>
   
+  <div id="feedbackMessage" class="feedback-message"></div>
+  
   <script>
-    // ======= Simple storage using IndexedDB for files & localStorage for events =======
+    // ======= Módulo 1: Gerenciamento do Banco de Dados (IndexedDB) =======
     const DB_NAME = 'calendar_notes_db_v1';
     const DB_STORE = 'notes';
     let db;
     
-    function openDB(){
-      return new Promise((res,rej)=>{
-        const req = indexedDB.open(DB_NAME,1);
-        req.onupgradeneeded = e => { const idb = e.target.result; if(!idb.objectStoreNames.contains(DB_STORE)) idb.createObjectStore(DB_STORE, { keyPath: 'id' }); };
-        req.onsuccess = e => { db = e.target.result; res(db); };
-        req.onerror = e => rej(e.target.error);
-      });
-    }
-    
-    function saveNoteToDB(note){
-      return new Promise((res,rej)=>{
-        const tx = db.transaction(DB_STORE, 'readwrite');
-        const store = tx.objectStore(DB_STORE);
-        store.put(note);
-        tx.oncomplete = ()=> res(note);
-        tx.onerror = e=> rej(e.target.error);
-      });
-    }
-    
-    function deleteNoteFromDB(id){
-      return new Promise((res,rej)=>{
-        const tx = db.transaction(DB_STORE,'readwrite');
-        tx.objectStore(DB_STORE).delete(id);
-        tx.oncomplete = ()=> res(); tx.onerror = e=> rej(e.target.error);
-      });
-    }
-    
-    function getNotesForDay(dateStr){
-      return new Promise((res,rej)=>{
-        const tx = db.transaction(DB_STORE,'readonly');
-        const store = tx.objectStore(DB_STORE);
-        const req = store.getAll();
-        req.onsuccess = ()=>{
-          const all = req.result || [];
-          res(all.filter(n=>n.date === dateStr).sort((a,b)=>b.createdAt - a.createdAt));
-        };
-        req.onerror = e=> rej(e.target.error);
-      });
-    }
-    
-    function getEventsList(){
-      const events = [];
-      for(let i=0; i<localStorage.length; i++){
-        const key = localStorage.key(i);
-        if(key.match(/^\d{4}-\d{2}-\d{2}$/)){
-          events.push(key);
-        }
-      }
-      return events;
-    }
+    const dbManager = {
+      async openDB() {
+        return new Promise((res, rej) => {
+          const req = indexedDB.open(DB_NAME, 1);
+          req.onupgradeneeded = e => { 
+            const idb = e.target.result;
+            if (!idb.objectStoreNames.contains(DB_STORE)) {
+              idb.createObjectStore(DB_STORE, { keyPath: 'id' });
+            }
+          };
+          req.onsuccess = e => { db = e.target.result; res(db); };
+          req.onerror = e => rej(e.target.error);
+        });
+      },
+      
+      async saveNote(note) {
+        return new Promise((res, rej) => {
+          const tx = db.transaction(DB_STORE, 'readwrite');
+          const store = tx.objectStore(DB_STORE);
+          store.put(note);
+          tx.oncomplete = () => res(note);
+          tx.onerror = e => rej(e.target.error);
+        });
+      },
+      
+      async deleteNote(id) {
+        return new Promise((res, rej) => {
+          const tx = db.transaction(DB_STORE, 'readwrite');
+          tx.objectStore(DB_STORE).delete(id);
+          tx.oncomplete = () => res();
+          tx.onerror = e => rej(e.target.error);
+        });
+      },
+      
+      async getNotesForDay(dateStr) {
+        return new Promise((res, rej) => {
+          const tx = db.transaction(DB_STORE, 'readonly');
+          const store = tx.objectStore(DB_STORE);
+          const req = store.getAll();
+          req.onsuccess = () => {
+            const all = req.result || [];
+            res(all.filter(n => n.date === dateStr).sort((a, b) => b.createdAt - a.createdAt));
+          };
+          req.onerror = e => rej(e.target.error);
+        });
+      },
 
-    // ======= UI calendar rendering =======
-    const calendarWrap = document.getElementById('calendarWrap');
-    const selectedDayLabel = document.getElementById('selectedDayLabel');
-    const selectedDayEventsLabel = document.getElementById('selectedDayEventsLabel');
-    const quickEventsList = document.getElementById('quickEventsList');
-    
-    let selectedDate = null; // YYYY-MM-DD
-    let currentMonth = new Date().getMonth();
-    let currentYear = new Date().getFullYear();
-    
-    function renderCalendar(year,month){
-      const date = new Date(year,month,1);
-      const daysInMonth = new Date(year,month+1,0).getDate();
-      const startDay = date.getDay();
-      
-      const events = getEventsList();
-      
-      let html = `<div class="calendar-header">
-                    <button onclick="prevMonth()">‹</button>
-                    <button onclick="prevYear()">«</button>
-                    <div>
-                      <select id="month-select" onchange="jumpToMonth(this.value)">
-                        ${Array.from({length:12},(_,i)=>`<option value="${i}" ${i===month?'selected':''}>${new Date(year,i,1).toLocaleString('pt-BR',{month:'long'})}</option>`).join('')}
-                      </select>
-                      <select id="year-select" onchange="jumpToYear(this.value)">
-                        ${Array.from({length:20},(_,i)=>`<option value="${year-10+i}" ${year-10+i===year?'selected':''}>${year-10+i}</option>`).join('')}
-                      </select>
-                    </div>
-                    <button onclick="nextYear()">»</button>
-                    <button onclick="nextMonth()">›</button>
-                  </div>`;
-      html += '<table><thead><tr><th>Dom</th><th>Seg</th><th>Ter</th><th>Qua</th><th>Qui</th><th>Sex</th><th>Sáb</th></tr></thead><tbody>';
-      let day=1; 
-      
-      for(let i=0;i<6;i++){ 
-        html += '<tr>'; 
-        for(let j=0;j<7;j++){ 
-          if(i===0 && j<startDay){ 
-            html += '<td></td>'; 
-          }else if(day>daysInMonth){ 
-            html += '<td></td>'; 
-          } else{ 
-            const dateStr = `${year}-${String(month+1).padStart(2,'0')}-${String(day).padStart(2,'0')}`; 
-            const hasEvent = events.includes(dateStr); 
-            const isSelected = dateStr === selectedDate;
-            const cls = (hasEvent ? 'has-event' : '') + (isSelected ? ' selected' : ''); 
-            html += `<td data-date="${dateStr}" class="${cls}"><div class="daynum">${day}</div>${hasEvent?'<div class="dot" title="Tem evento"></div>':''}</td>`; 
-            day++; 
-          } 
-        } 
-        html += '</tr>'; 
-      }
-      html += '</tbody></table>';
-      calendarWrap.innerHTML = html;
-      
-      calendarWrap.querySelectorAll('td[data-date]').forEach(td=>{
-        td.addEventListener('click', ()=>{
-          document.querySelectorAll('td.selected').forEach(x=>x.classList.remove('selected'));
-          td.classList.add('selected');
-          selectedDate = td.getAttribute('data-date');
-          selectedDayLabel.textContent = new Date(selectedDate + 'T12:00:00').toLocaleDateString('pt-BR',{day:'numeric',month:'long',year:'numeric'});
-          selectedDayEventsLabel.textContent = new Date(selectedDate + 'T12:00:00').toLocaleDateString('pt-BR',{day:'numeric',month:'long',year:'numeric'});
-          loadDayData(selectedDate);
-        });
-      });
-      
-      if (selectedDate) {
-          loadDayData(selectedDate);
-          document.querySelector(`td[data-date='${selectedDate}']`)?.classList.add('selected');
-      }
-    }
-    
-    window.prevMonth = ()=>{ currentMonth--; if(currentMonth < 0){ currentMonth = 11; currentYear--; } renderCalendar(currentYear, currentMonth); };
-    window.nextMonth = ()=>{ currentMonth++; if(currentMonth > 11){ currentMonth = 0; currentYear++; } renderCalendar(currentYear, currentMonth); };
-    window.prevYear = ()=>{ currentYear--; renderCalendar(currentYear, currentMonth); };
-    window.nextYear = ()=>{ currentYear++; renderCalendar(currentYear, currentMonth); };
-    window.jumpToMonth = (month)=>{ currentMonth = parseInt(month); renderCalendar(currentYear, currentMonth); };
-    window.jumpToYear = (year)=>{ currentYear = parseInt(year); renderCalendar(currentYear, currentMonth); };
-    
-    // ======= Day panel =======
-    const noteTitle = document.getElementById('noteTitle');
-    const noteText = document.getElementById('noteText');
-    const mediaInput = document.getElementById('mediaInput');
-    const saveNote = document.getElementById('saveNote');
-    const clearInputs = document.getElementById('clearInputs');
-    const notesList = document.getElementById('notesList');
-    
-    let mediaRecorder; let recordedChunks = [];
-    const recStart = document.getElementById('recStart');
-    const recStop = document.getElementById('recStop');
-    
-    recStart.addEventListener('click', async ()=>{
-      if(!navigator.mediaDevices) return alert('Gravação não suportada neste navegador');
-      try{
-        const stream = await navigator.mediaDevices.getUserMedia({audio:true});
-        mediaRecorder = new MediaRecorder(stream);
-        recordedChunks = [];
-        mediaRecorder.ondataavailable = e => { if(e.data.size>0) recordedChunks.push(e.data); };
-        mediaRecorder.onstop = ()=>{
-          const blob = new Blob(recordedChunks,{type:'audio/webm'});
-          const file = new File([blob],'recording.webm',{type:blob.type});
-          const dt = new DataTransfer(); dt.items.add(file); mediaInput.files = dt.files;
-          recStart.disabled = false; recStop.disabled = true;
-          alert('Áudio gravado com sucesso! Clique em "Salvar Anotação" para salvá-lo.');
-        };
-        mediaRecorder.start();
-        recStart.disabled = true; recStop.disabled = false;
-      }catch(e){ alert('Permissão negada ou erro: '+e.message) }
-    });
-    recStop.addEventListener('click', ()=>{ 
-      if(mediaRecorder && mediaRecorder.state!=='inactive') mediaRecorder.stop(); 
-    });
-    
-    clearInputs.addEventListener('click', ()=>{ 
-      noteTitle.value=''; 
-      noteText.value=''; 
-      mediaInput.value=''; 
-      recStart.disabled = false; 
-      recStop.disabled = true;
-    });
-    
-    saveNote.addEventListener('click', async ()=>{
-      if(!selectedDate) return alert('Selecione um dia no calendário');
-      
-      const id = Date.now().toString(36)+Math.random().toString(36).slice(2,6);
-      const note = { id, date: selectedDate, title: noteTitle.value.trim(), text: noteText.value.trim(), createdAt: Date.now() };
-      
-      if(mediaInput.files && mediaInput.files[0]){
-        const file = mediaInput.files[0];
-        note.media = await fileToBlob(file);
-        note.mediaType = file.type.split('/')[0];
-      }
-      
-      await saveNoteToDB(note);
-      await loadDayData(selectedDate);
-      clearInputs.click();
-      
-      localStorage.setItem(selectedDate, 'true');
-      renderCalendar(currentYear, currentMonth);
-    });
-    
-    function fileToBlob(file){ 
-      return new Promise((res)=>{ 
-        const reader = new FileReader(); 
-        reader.onload = ()=>{ res(new Blob([new Uint8Array(reader.result)],{type:file.type})); }; 
-        reader.readAsArrayBuffer(file); 
-      }); 
-    }
-    
-    async function loadDayData(dateStr){
-      const notes = await getNotesForDay(dateStr);
-      
-      quickEventsList.innerHTML = '';
-      if(notes.length === 0){
-        quickEventsList.innerHTML = 'Nenhuma anotação neste dia';
-      } else {
-        notes.forEach(n => {
-          const el = document.createElement('div');
-          el.className = 'event-item';
-          el.textContent = n.title || 'Anotação sem título';
-          quickEventsList.appendChild(el);
+      async getEventsList() {
+        return new Promise((res, rej) => {
+          const events = [];
+          const tx = db.transaction(DB_STORE, 'readonly');
+          const store = tx.objectStore(DB_STORE);
+          const cursorRequest = store.openCursor();
+          const dates = new Set();
+          
+          cursorRequest.onsuccess = e => {
+            const cursor = e.target.result;
+            if (cursor) {
+              if (cursor.value.date) {
+                dates.add(cursor.value.date);
+              }
+              cursor.continue();
+            } else {
+              res(Array.from(dates));
+            }
+          };
+          cursorRequest.onerror = e => rej(e.target.error);
         });
       }
-      
-      notesList.innerHTML = '';
-      if(notes.length===0){ 
-        notesList.innerHTML = '<div class="small">Nenhuma anotação para este dia</div>'; 
-        return; 
-      }
-      
-      for(const n of notes){ 
-        const el = document.createElement('div'); 
-        el.className='note'; 
-        let inner = `<div style='font-weight:700'>${escapeHtml(n.title)||'Sem título'}</div>`;
-        inner += `<div class="meta">${new Date(n.createdAt).toLocaleString('pt-BR')}</div>`; 
-        inner += `<button data-id="${n.id}" class="delete-btn">✖</button>`;
-        if(n.text) inner += `<div style="margin-top:6px">${escapeHtml(n.text)}</div>`; 
+    };
+
+    // ======= Módulo 2: Manipulação da UI e do Calendário =======
+    const ui = {
+      calendarWrap: document.getElementById('calendarWrap'),
+      selectedDayLabel: document.getElementById('selectedDayLabel'),
+      selectedDayEventsLabel: document.getElementById('selectedDayEventsLabel'),
+      quickEventsList: document.getElementById('quickEventsList'),
+      notesList: document.getElementById('notesList'),
+      noteTitle: document.getElementById('noteTitle'),
+      noteText: document.getElementById('noteText'),
+      mediaInput: document.getElementById('mediaInput'),
+      notificationType: document.getElementById('notificationType'),
+      contactInfo: document.getElementById('contactInfo'),
+      contactLabel: document.getElementById('contactLabel'),
+      notificationSettings: document.getElementById('notificationSettings'),
+      reminderDays: document.getElementById('reminderDays'),
+      reminderTime: document.getElementById('reminderTime'),
+      saveNoteBtn: document.getElementById('saveNote'),
+      clearInputsBtn: document.getElementById('clearInputs'),
+      recStartBtn: document.getElementById('recStart'),
+      recStopBtn: document.getElementById('recStop'),
+      recStatus: document.getElementById('recStatus'),
+      feedbackMessage: document.getElementById('feedbackMessage'),
+
+      selectedDate: null,
+      currentMonth: new Date().getMonth(),
+      currentYear: new Date().getFullYear(),
+      mediaRecorder: null,
+      recordedChunks: [],
+
+      async renderCalendar() {
+        const year = ui.currentYear;
+        const month = ui.currentMonth;
+        const date = new Date(year, month, 1);
+        const daysInMonth = new Date(year, month + 1, 0).getDate();
+        const startDay = date.getDay();
+        const events = await dbManager.getEventsList();
         
-        if(n.media){
-            const mediaUrl = URL.createObjectURL(n.media);
-            if(n.mediaType === 'image') inner += `<img src="${mediaUrl}" alt="media"/>`;
-            else if(n.mediaType === 'audio') inner += `<audio controls src="${mediaUrl}"></audio>`;
-            else if(n.mediaType === 'video') inner += `<video controls src="${mediaUrl}"></video>`;
+        let html = `<div class="calendar-header">
+                      <button onclick="app.prevMonth()">‹</button>
+                      <button onclick="app.prevYear()">«</button>
+                      <div>
+                        <select id="month-select" onchange="app.jumpToMonth(this.value)">
+                          ${Array.from({length:12},(_,i)=>`<option value="${i}" ${i===month?'selected':''}>${new Date(year,i,1).toLocaleString('pt-BR',{month:'long'})}</option>`).join('')}
+                        </select>
+                        <select id="year-select" onchange="app.jumpToYear(this.value)">
+                          ${Array.from({length:20},(_,i)=>`<option value="${year-10+i}" ${year-10+i===year?'selected':''}>${year-10+i}</option>`).join('')}
+                        </select>
+                      </div>
+                      <button onclick="app.nextYear()">»</button>
+                      <button onclick="app.nextMonth()">›</button>
+                    </div>`;
+        html += '<table><thead><tr><th>Dom</th><th>Seg</th><th>Ter</th><th>Qua</th><th>Qui</th><th>Sex</th><th>Sáb</th></tr></thead><tbody>';
+        let day = 1;
+        
+        for (let i = 0; i < 6; i++) {
+          html += '<tr>';
+          for (let j = 0; j < 7; j++) {
+            if (i === 0 && j < startDay) {
+              html += '<td></td>';
+            } else if (day > daysInMonth) {
+              html += '<td></td>';
+            } else {
+              const dateStr = `${year}-${String(month + 1).padStart(2, '0')}-${String(day).padStart(2, '0')}`;
+              const hasEvent = events.includes(dateStr);
+              const isSelected = dateStr === ui.selectedDate;
+              const cls = (hasEvent ? 'has-event' : '') + (isSelected ? ' selected' : '');
+              html += `<td data-date="${dateStr}" class="${cls}"><div class="daynum">${day}</div>${hasEvent ? '<div class="dot" title="Tem evento"></div>' : ''}</td>`;
+              day++;
+            }
+          }
+          html += '</tr>';
+        }
+        html += '</tbody></table>';
+        ui.calendarWrap.innerHTML = html;
+        
+        ui.calendarWrap.querySelectorAll('td[data-date]').forEach(td => {
+          td.addEventListener('click', () => {
+            document.querySelectorAll('td.selected').forEach(x => x.classList.remove('selected'));
+            td.classList.add('selected');
+            ui.selectedDate = td.getAttribute('data-date');
+            ui.selectedDayLabel.textContent = new Date(ui.selectedDate + 'T12:00:00').toLocaleDateString('pt-BR', { day: 'numeric', month: 'long', year: 'numeric' });
+            ui.selectedDayEventsLabel.textContent = new Date(ui.selectedDate + 'T12:00:00').toLocaleDateString('pt-BR', { day: 'numeric', month: 'long', year: 'numeric' });
+            ui.loadDayData(ui.selectedDate);
+          });
+        });
+        
+        if (ui.selectedDate) {
+          document.querySelector(`td[data-date='${ui.selectedDate}']`)?.classList.add('selected');
+          ui.loadDayData(ui.selectedDate);
+        }
+      },
+
+      async loadDayData(dateStr) {
+        const notes = await dbManager.getNotesForDay(dateStr);
+        
+        ui.quickEventsList.innerHTML = '';
+        if (notes.length === 0) {
+          ui.quickEventsList.innerHTML = 'Nenhuma anotação neste dia';
+        } else {
+          notes.forEach(n => {
+            const el = document.createElement('div');
+            el.className = 'event-item';
+            el.textContent = n.title || 'Anotação sem título';
+            ui.quickEventsList.appendChild(el);
+          });
         }
         
-        el.innerHTML = inner; 
-        notesList.appendChild(el); 
+        ui.notesList.innerHTML = '';
+        if (notes.length === 0) {
+          ui.notesList.innerHTML = '<div class="small">Nenhuma anotação para este dia</div>';
+          return;
+        }
         
-        el.querySelector('.delete-btn')?.addEventListener('click', async ()=>{ 
-          if(!confirm('Apagar anotação?')) return; 
-          await deleteNoteFromDB(n.id); 
-          await loadDayData(dateStr); 
+        for (const n of notes) {
+          const el = document.createElement('div');
+          el.className = 'note';
+          let inner = `<div style='font-weight:700'>${ui.escapeHtml(n.title) || 'Sem título'}</div>`;
+          inner += `<div class="meta">${new Date(n.createdAt).toLocaleString('pt-BR')}</div>`;
+          inner += `<button data-id="${n.id}" class="delete-btn">✖</button>`;
           
-          const remainingNotes = await getNotesForDay(dateStr);
-          if (remainingNotes.length === 0) {
-              localStorage.removeItem(dateStr);
+          if (n.reminder) {
+            inner += `<div class="meta" style="margin-top:8px; font-weight: 600;">
+                       Lembrete: ${n.reminder.daysBefore} dias antes às ${n.reminder.time} por ${n.reminder.type}
+                    </div>`;
+            inner += `<div class="meta">Contato: ${ui.escapeHtml(n.reminder.contact)}</div>`;
           }
-          renderCalendar(currentYear, currentMonth);
-        }); 
+
+          if (n.text) inner += `<div style="margin-top:6px">${ui.escapeHtml(n.text)}</div>`;
+          
+          if (n.media) {
+            const mediaUrl = URL.createObjectURL(n.media);
+            if (n.mediaType === 'image') inner += `<img src="${mediaUrl}" alt="media"/>`;
+            else if (n.mediaType === 'audio') inner += `<audio controls src="${mediaUrl}"></audio>`;
+            else if (n.mediaType === 'video') inner += `<video controls src="${mediaUrl}"></video>`;
+          }
+          
+          el.innerHTML = inner;
+          ui.notesList.appendChild(el);
+          
+          el.querySelector('.delete-btn')?.addEventListener('click', async () => {
+            if (!confirm('Apagar anotação?')) return;
+            await dbManager.deleteNote(n.id);
+            ui.showFeedback('Anotação apagada!', 'success');
+            ui.loadDayData(dateStr);
+            ui.renderCalendar();
+          });
+        }
+      },
+
+      toggleNotificationFields() {
+        if (ui.notificationType.value) {
+          ui.contactLabel.style.display = 'block';
+          ui.contactInfo.style.display = 'block';
+          ui.notificationSettings.style.display = 'block';
+          if (ui.notificationType.value === 'email') {
+            ui.contactInfo.type = 'email';
+            ui.contactInfo.placeholder = 'Digite o e-mail para lembrete';
+          } else {
+            ui.contactInfo.type = 'tel';
+            ui.contactInfo.placeholder = 'Digite o número do WhatsApp (ex: +5511999998888)';
+          }
+        } else {
+          ui.contactLabel.style.display = 'none';
+          ui.contactInfo.style.display = 'none';
+          ui.notificationSettings.style.display = 'none';
+        }
+      },
+
+      clearInputs() {
+        ui.noteTitle.value = '';
+        ui.noteText.value = '';
+        ui.mediaInput.value = '';
+        ui.notificationType.value = '';
+        ui.contactInfo.value = '';
+        ui.toggleNotificationFields();
+        ui.recStartBtn.disabled = false;
+        ui.recStopBtn.disabled = true;
+        ui.recStatus.style.display = 'none';
+      },
+      
+      showFeedback(message, type = 'success') {
+        ui.feedbackMessage.textContent = message;
+        ui.feedbackMessage.className = `feedback-message ${type}`;
+        ui.feedbackMessage.style.display = 'block';
+        setTimeout(() => {
+          ui.feedbackMessage.style.display = 'none';
+        }, 3000);
+      },
+
+      showLoading(state) {
+        const spinner = ui.saveNoteBtn.querySelector('.spinner');
+        if (state) {
+          ui.saveNoteBtn.classList.add('loading');
+          spinner.style.display = 'inline-block';
+          ui.saveNoteBtn.textContent = 'Salvando...';
+        } else {
+          ui.saveNoteBtn.classList.remove('loading');
+          spinner.style.display = 'none';
+          ui.saveNoteBtn.innerHTML = 'Salvar Anotação <span class="spinner" style="display:none;"></span>';
+        }
+      },
+
+      fileToBlob(file) {
+        return new Promise((res) => {
+          const reader = new FileReader();
+          reader.onload = () => { res(new Blob([new Uint8Array(reader.result)], { type: file.type })); };
+          reader.readAsArrayBuffer(file);
+        });
+      },
+
+      escapeHtml(str) {
+        if (typeof str !== 'string') return str;
+        return str.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
       }
-    }
+    };
+
+    // ======= Módulo 3: Lógica da Aplicação (Event Listeners) =======
+    const app = {
+      init() {
+        dbManager.openDB().then(() => {
+          ui.renderCalendar();
+          app.setupEventListeners();
+        }).catch(err => {
+          console.error("Erro ao iniciar o banco de dados:", err);
+          ui.showFeedback("Erro ao carregar o aplicativo. Tente novamente.", "error");
+        });
+      },
+
+      setupEventListeners() {
+        ui.notificationType.addEventListener('change', ui.toggleNotificationFields);
+        ui.clearInputsBtn.addEventListener('click', ui.clearInputs);
+        ui.saveNoteBtn.addEventListener('click', app.saveNote);
+        ui.recStartBtn.addEventListener('click', app.startRecording);
+        ui.recStopBtn.addEventListener('click', app.stopRecording);
+      },
+
+      async saveNote() {
+        if (!ui.selectedDate) {
+          ui.showFeedback('Selecione um dia no calendário para salvar a anotação.', 'error');
+          return;
+        }
+
+        ui.showLoading(true);
+
+        const id = Date.now().toString(36) + Math.random().toString(36).slice(2, 6);
+        const note = {
+          id,
+          date: ui.selectedDate,
+          title: ui.noteTitle.value.trim(),
+          text: ui.noteText.value.trim(),
+          createdAt: Date.now(),
+        };
+
+        if (ui.notificationType.value) {
+          note.reminder = {
+            type: ui.notificationType.value,
+            contact: ui.contactInfo.value.trim(),
+            daysBefore: ui.reminderDays.value,
+            time: ui.reminderTime.value
+          };
+        }
+        
+        if (ui.mediaInput.files && ui.mediaInput.files[0]) {
+          const file = ui.mediaInput.files[0];
+          note.media = await ui.fileToBlob(file);
+          note.mediaType = file.type.split('/')[0];
+        }
+
+        try {
+          await dbManager.saveNote(note);
+          await ui.loadDayData(ui.selectedDate);
+          ui.clearInputs();
+          ui.renderCalendar();
+          ui.showFeedback('Anotação salva com sucesso!', 'success');
+        } catch (e) {
+          console.error("Erro ao salvar a anotação:", e);
+          ui.showFeedback('Erro ao salvar a anotação.', 'error');
+        } finally {
+          ui.showLoading(false);
+        }
+      },
+
+      async startRecording() {
+        if (!navigator.mediaDevices) {
+          return ui.showFeedback('Gravação não suportada neste navegador.', 'error');
+        }
+        try {
+          const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+          ui.mediaRecorder = new MediaRecorder(stream);
+          ui.recordedChunks = [];
+          
+          let startTime = Date.now();
+          const updateStatus = setInterval(() => {
+              const elapsed = Date.now() - startTime;
+              const seconds = Math.floor(elapsed / 1000);
+              const minutes = Math.floor(seconds / 60);
+              const remainingSeconds = seconds % 60;
+              ui.recStatus.textContent = `Gravando... ${String(minutes).padStart(2, '0')}:${String(remainingSeconds).padStart(2, '0')}`;
+          }, 1000);
+
+          ui.mediaRecorder.ondataavailable = e => { if (e.data.size > 0) ui.recordedChunks.push(e.data); };
+          ui.mediaRecorder.onstop = () => {
+            clearInterval(updateStatus);
+            const blob = new Blob(ui.recordedChunks, { type: 'audio/webm' });
+            const file = new File([blob], 'recording.webm', { type: blob.type });
+            const dt = new DataTransfer(); dt.items.add(file); ui.mediaInput.files = dt.files;
+            ui.recStartBtn.disabled = false; ui.recStopBtn.disabled = true;
+            ui.recStatus.textContent = 'Áudio pronto!';
+            ui.showFeedback('Áudio gravado com sucesso!', 'success');
+          };
+          
+          ui.mediaRecorder.start();
+          ui.recStartBtn.disabled = true;
+          ui.recStopBtn.disabled = false;
+          ui.recStatus.style.display = 'inline-block';
+        } catch (e) {
+          ui.showFeedback('Permissão de microfone negada ou erro: ' + e.message, 'error');
+        }
+      },
+
+      stopRecording() {
+        if (ui.mediaRecorder && ui.mediaRecorder.state !== 'inactive') {
+          ui.mediaRecorder.stop();
+        }
+      },
+
+      prevMonth() { ui.currentMonth--; if (ui.currentMonth < 0) { ui.currentMonth = 11; ui.currentYear--; } ui.renderCalendar(); },
+      nextMonth() { ui.currentMonth++; if (ui.currentMonth > 11) { ui.currentMonth = 0; ui.currentYear++; } ui.renderCalendar(); },
+      prevYear() { ui.currentYear--; ui.renderCalendar(); },
+      nextYear() { ui.currentYear++; ui.renderCalendar(); },
+      jumpToMonth(month) { ui.currentMonth = parseInt(month); ui.renderCalendar(); },
+      jumpToYear(year) { ui.currentYear = parseInt(year); ui.renderCalendar(); }
+    };
     
-    function escapeHtml(str){ 
-      return str.replaceAll('&','&amp;').replaceAll('<','&lt;').replaceAll('>','&gt;').replaceAll('"','&quot;'); 
-    }
-    
-    (async function init(){ 
-      await openDB(); 
-      renderCalendar(currentYear, currentMonth); 
-    })();
+    // Inicia a aplicação
+    app.init();
   </script>
 </body>
 </html>
